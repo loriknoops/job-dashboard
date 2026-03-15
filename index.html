@@ -419,7 +419,7 @@ async function deleteJob(id) {
 
 function openForm(id) {
   editingId = id;
-  const job = id ? jobs.find(j=>j.id===id) : null;
+  const job = id ? jobs.find(j=>String(j.id)===String(id)) : null;
   document.getElementById("form-title").textContent = id ? "Edit Role" : "Add New Role";
   document.getElementById("f-company").value = job?.company||"";
   document.getElementById("f-role").value = job?.role||"";
@@ -479,7 +479,7 @@ document.addEventListener('click', function(e) {
   const card = e.target.closest('.card[data-id]');
   const row = e.target.closest('tr[data-id]');
   const urgent = e.target.closest('.urgent-tag[data-id]');
-  if (card) openDetail(card.dataset.id);
+  if (card) { console.log('card clicked', card.dataset.id); openDetail(card.dataset.id); }
   else if (row) openDetail(row.dataset.id);
   else if (urgent) openDetail(urgent.dataset.id);
 });
