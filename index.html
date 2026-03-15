@@ -297,7 +297,7 @@ function renderUrgent() {
   bar.innerHTML = '<span class="urgent-label">⚡ DEADLINE SOON</span>' +
     urg.map(j => {
       const days = Math.ceil((new Date(j.deadline) - new Date()) / 86400000);
-      return `<span class="urgent-tag" onclick="openDetail('${j.id}')">${j.company} — ${days===0?"TODAY":days+"d"}</span>`;
+      return `<span class="urgent-tag" data-id="${j.id}">${j.company} — ${days===0?"TODAY":days+"d"}</span>`;
     }).join("");
 }
 
@@ -316,7 +316,7 @@ function renderKanban(filtered) {
       </div>
       ${cols.map(job => {
         const pc = PRIORITY_COLORS[job.priority]||{};
-        return `<div class="card" onclick="openDetail('${job.id}')">
+        return `<div class="card" data-id="${job.id}">
           <div class="card-top">
             <div><div class="card-company">${job.company||""}</div><div class="card-role">${job.role||""}</div></div>
             <span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${job.priority||""}</span>
@@ -348,7 +348,7 @@ function renderTable(filtered) {
         const c = STATUS_COLORS[job.status]||{};
         const pc = PRIORITY_COLORS[job.priority]||{};
         const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "—";
-        return `<tr onclick="openDetail('${job.id}')">
+        return `<tr data-id="${job.id}">
           <td style="font-weight:600;white-space:nowrap">${job.company||""}</td>
           <td style="color:#888;font-size:12px">${job.role||""}</td>
           <td><span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};padding:2px 9px;border-radius:20px;font-family:monospace;font-size:10px;white-space:nowrap">${job.status||""}</span></td>
@@ -473,6 +473,16 @@ function setFilter(f, btn) {
   btn.classList.add("active");
   render();
 }
+
+// Event delegation for dynamically rendered elements
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.card[data-id]');
+  const row = e.target.closest('tr[data-id]');
+  const urgent = e.target.closest('.urgent-tag[data-id]');
+  if (card) openDetail(card.dataset.id);
+  else if (row) openDetail(row.dataset.id);
+  else if (urgent) openDetail(urgent.dataset.id);
+});
 
 load();
 </script>
