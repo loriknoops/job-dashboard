@@ -364,7 +364,7 @@ function renderTable(filtered) {
 }
 
 function openDetail(id) {
-  const job = jobs.find(j => j.id === id);
+  const job = jobs.find(j => String(j.id) === String(id));
   if (!job) return;
   const status = normalizeStatus(job.status);
   document.getElementById("d-company").textContent = job.company||"";
@@ -404,7 +404,7 @@ function closeDetailModal() { document.getElementById("detail-overlay").classLis
 
 async function changeStatus(id, status) {
   await dbUpdate(id, { status: status.toLowerCase() });
-  jobs = jobs.map(j => j.id===id ? {...j, status} : j);
+  jobs = jobs.map(j => String(j.id)===String(id) ? {...j, status} : j);
   openDetail(id);
   render();
   showStatus("✓ status updated");
@@ -412,7 +412,7 @@ async function changeStatus(id, status) {
 
 async function deleteJob(id) {
   await dbDelete(id);
-  jobs = jobs.filter(j => j.id!==id);
+  jobs = jobs.filter(j => String(j.id)!==String(id));
   render();
   showStatus("✓ deleted");
 }
@@ -450,7 +450,7 @@ async function saveForm() {
   document.getElementById("form-overlay").classList.add("hidden");
   if (editingId) {
     await dbUpdate(editingId, payload);
-    jobs = jobs.map(j => j.id===editingId ? {...j, ...payload} : j);
+    jobs = jobs.map(j => String(j.id)===String(editingId) ? {...j, ...payload} : j);
     showStatus("✓ saved");
   } else {
     const newJob = await dbInsert(payload);
