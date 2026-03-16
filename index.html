@@ -308,7 +308,8 @@ function renderKanban(filtered) {
   const statuses = STATUSES.filter(s => !["Rejected","On Hold"].includes(s) || filtered.some(j=>j.status===s));
   kv.innerHTML = statuses.map(status => {
     const c = STATUS_COLORS[status];
-    const cols = filtered.filter(j => j.status === status);
+    const PRIORITY_ORDER = {"High":0,"Medium":1,"Low":2};
+    const cols = filtered.filter(j => j.status === status).sort((a,b) => (PRIORITY_ORDER[normalizePriority(a.priority)]||1) - (PRIORITY_ORDER[normalizePriority(b.priority)]||1));
     return `<div class="column">
       <div class="col-header">
         <span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${status.toUpperCase()}</span>
