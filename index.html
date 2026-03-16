@@ -322,7 +322,7 @@ function renderKanban(filtered) {
             <div><div class="card-company">${job.company||""}</div><div class="card-role">${job.role||""}</div></div>
             <span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${job.priority||""}</span>
           </div>
-          ${job.notes ? `<div class="next-action">→ ${job.notes}</div>` : ""}
+          ${job.next_action ? `<div class="next-action">→ ${job.next_action}</div>` : ""}
           <div class="card-bottom">
             <div class="stars-row">
               <span class="fit-stars" title="Fit">⚡${stars(job.fit)}</span>
@@ -393,7 +393,9 @@ function openDetail(id) {
   const notesBox = document.getElementById("d-notes-box");
   if (job.notes) { notesBox.classList.remove("hidden"); document.getElementById("d-notes").textContent = job.notes; }
   else notesBox.classList.add("hidden");
-  document.getElementById("d-next-action-box").classList.add("hidden");
+  const naBox = document.getElementById("d-next-action-box");
+  if (job.next_action) { naBox.classList.remove("hidden"); document.getElementById("d-next-action").textContent = job.next_action; }
+  else naBox.classList.add("hidden");
 
   document.getElementById("d-edit-btn").onclick = () => { closeDetailModal(); openForm(id); };
   document.getElementById("d-delete-btn").onclick = () => { deleteJob(id); closeDetailModal(); };
@@ -405,7 +407,7 @@ function closeDetailModal() { document.getElementById("detail-overlay").classLis
 
 async function changeStatus(id, status) {
   await dbUpdate(id, { status: status.toLowerCase() });
-  jobs = jobs.map(j => String(j.id)===String(id) ? {...j, status} : j);
+  jobs = await dbGet();
   openDetail(id);
   render();
   showStatus("✓ status updated");
@@ -433,7 +435,7 @@ function openForm(id) {
   document.getElementById("f-priority").value = normalizePriority(job?.priority)||"Medium";
   document.getElementById("f-fit").value = job?.fit||3;
   document.getElementById("f-interest").value = job?.interest||3;
-  document.getElementById("f-nextAction").value = "";
+  document.getElementById("f-nextAction").value = job?.next_action||"";
   document.getElementById("f-notes").value = job?.notes||"";
   document.getElementById("form-overlay").classList.remove("hidden");
 }
@@ -448,17 +450,17 @@ async function saveForm() {
     status: document.getElementById("f-status").value.toLowerCase(),
     priority: document.getElementById("f-priority").value.toLowerCase(),
     notes: document.getElementById("f-notes").value,
+    next_action: document.getElementById("f-nextAction").value,
   };
   document.getElementById("form-overlay").classList.add("hidden");
   if (editingId) {
     await dbUpdate(editingId, payload);
-    jobs = jobs.map(j => String(j.id)===String(editingId) ? {...j, ...payload} : j);
     showStatus("✓ saved");
   } else {
-    const newJob = await dbInsert(payload);
-    if (newJob) jobs = [...jobs, newJob];
+    await dbInsert(payload);
     showStatus("✓ added");
   }
+  jobs = await dbGet();
   render();
 }
 
