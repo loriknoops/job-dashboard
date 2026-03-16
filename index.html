@@ -445,6 +445,7 @@ async function saveForm() {
     salary: document.getElementById("f-salary").value,
     deadline: document.getElementById("f-deadline").value || null,
     status: document.getElementById("f-status").value.toLowerCase(),
+    priority: document.getElementById("f-priority").value.toLowerCase(),
     notes: document.getElementById("f-notes").value,
   };
   document.getElementById("form-overlay").classList.add("hidden");
