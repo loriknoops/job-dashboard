@@ -203,7 +203,7 @@
   <div class="feed-header">
     <div>
       <div class="feed-title">Job Feed</div>
-      <div class="feed-meta" id="feed-meta">Fetches jobs from Remotive, Wellfound, Idealist + Claude web search across 10+ mission boards</div>
+      <div class="feed-meta" id="feed-meta">Auto-fetches from Remotive · Jobicy · We Work Remotely — manual check: 80k Hours · Climatebase · ImpactPool · EA Board · Idealist</div>
     </div>
     <div class="feed-controls">
       <button class="refresh-btn" id="refresh-btn" onclick="refreshFeed()">⟳ Refresh Feed</button>
@@ -368,18 +368,18 @@ function analyzeJob(job) {
 
   // Mission detection
   const missionMap = [
-    { label: "Climate", terms: ["climate","clean energy","renewable","sustainability","net zero","carbon","emissions","green","environment","nature","cleantech","energy transition"] },
-    { label: "Global Dev", terms: ["global development","international development","developing countries","lmic","emerging markets","humanitarian","poverty","aid","oda","undp","world bank","unicef","oxfam","relief"] },
-    { label: "Health", terms: ["health","medical","healthcare","public health","pandemic","disease","wellbeing","mental health","biotech","pharma","global health","chai","malaria","hiv"] },
-    { label: "AI Safety", terms: ["ai safety","alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai","agi","anthropic","deepmind","openai"] },
-    { label: "Impact Investing", terms: ["impact invest","esg","blended finance","social finance","microfinance","financial inclusion","impact capital","venture philanthropy","catalytic"] },
-    { label: "Education", terms: ["education","edtech","learning","university","school","skills","training","literacy","higher education"] },
-    { label: "Policy", terms: ["policy","government","public sector","regulation","advocacy","democracy","governance","think tank","diplomacy"] },
-    { label: "Housing", terms: ["housing","shelter","homelessness","urban","community development","techo","habitat"] },
-    { label: "Food/Ag", terms: ["food","agriculture","food security","nutrition","alternative protein","food systems"] },
-    { label: "Tech for Good", terms: ["tech for good","civic tech","social tech","nonprofit tech","digital public","responsible tech"] },
-    { label: "Innovation", terms: ["innovation","startup","venture","accelerator","incubator","social enterprise"] },
-    { label: "Financial Inclusion", terms: ["financial inclusion","microfinance","fintech","payments","banking","remittance","unbanked"] },
+    { label: "Climate", terms: ["climate change","clean energy","renewable energy","net zero","carbon capture","carbon offset","energy transition","cleantech","decarbonization","climate justice","nature-based","biodiversity"] },
+    { label: "Global Dev", terms: ["global development","international development","developing countries","lmic","low-income countries","humanitarian","poverty alleviation","aid effectiveness","oda","undp","unicef","oxfam","relief","techo"] },
+    { label: "Health", terms: ["global health","public health","health equity","healthcare access","pandemic","malaria","hiv","tuberculosis","maternal health","chai","health system strengthening"] },
+    { label: "AI Safety", terms: ["ai safety","ai alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai","agi safety","beneficial ai"] },
+    { label: "Impact Investing", terms: ["impact investing","blended finance","social finance","microfinance","financial inclusion","impact capital","catalytic finance","development finance","esg investing"] },
+    { label: "Education", terms: ["education access","edtech","learning outcomes","literacy","higher education access","social mobility","youth empowerment"] },
+    { label: "Policy", terms: ["public policy","social policy","policy reform","governance reform","democracy","rule of law","social protection","policy advocacy"] },
+    { label: "Housing", terms: ["affordable housing","housing access","homelessness","urban development","habitat for humanity","techo"] },
+    { label: "Food Security", terms: ["food security","food systems","food sovereignty","smallholder","agriculture development","nutrition access"] },
+    { label: "Tech for Good", terms: ["tech for good","civic tech","responsible tech","nonprofit tech","digital public goods","digital rights"] },
+    { label: "Financial Inclusion", terms: ["financial inclusion","microfinance","unbanked","mobile money","payments access","remittance","fintech for development"] },
+    { label: "Social Enterprise", terms: ["social enterprise","b corp","benefit corporation","social innovation","mission-driven","purpose-driven"] },
   ];
   let mission = "General";
   for (const m of missionMap) {
@@ -484,19 +484,16 @@ function analyzeJob(job) {
   else if (/contract|freelance/i.test(text)) engagement = "Contract";
   else if (/short.?term|temporary/i.test(text)) engagement = "Short-term";
 
-  // Org type - use known org names + description signals
-  let orgType = "Corporate"; // default
-  const knownNGOs = ["oxfam","save the children","techo","care international","mercy corps","world vision","red cross","unicef","undp","who ","oecd","world bank","ifc","idb","giz","usaid","dfid","gates foundation","rockefeller","ford foundation","open society","wellcome trust","skoll","omidyar","hewlett","mckinsey","bcg","bain","deloitte","accenture","mckinsey","pwc"];
-  const orgHints = (job.company || "").toLowerCase() + " " + desc.slice(0,400);
-  if (knownNGOs.slice(0,14).some(n => orgHints.includes(n))) orgType = "Multilateral/IGO";
-  else if (knownNGOs.slice(14,22).some(n => orgHints.includes(n))) orgType = "Foundation";
-  else if (/ngo|non.?profit|nonprofit|charity|501.?c3|civil society|social enterprise/i.test(orgHints)) orgType = "NGO/Non-profit";
-  else if (/series [a-c]|seed stage|early.?stage|pre.?series|angel round/i.test(orgHints)) orgType = "Startup";
-  else if (/series [d-f]|growth.?stage|scale.?up/i.test(orgHints)) orgType = "Scale-up";
-  else if (/foundation/i.test(job.company || "")) orgType = "Foundation";
-  else if (/university|research institute|think tank|academia/i.test(orgHints)) orgType = "Academia/Research";
-  else if (/government|ministry|federal|municipality|public sector/i.test(orgHints)) orgType = "Government";
-  else if (/startup|founded in 20[12]\d|we are a small team|early.?stage/i.test(orgHints)) orgType = "Startup";
+  // Org type - simplified: For-profit vs Non-profit vs Multilateral vs Government vs Academia
+  let orgType = "For-profit"; // default - everything is for-profit unless explicitly stated
+  const companyLower = (job.company || "").toLowerCase();
+  const orgHints = companyLower + " " + desc.slice(0, 600);
+  const multiNames = ["united nations","undp","unicef","world bank","imf","oecd","idb","ifc","unfccc","wfp","unhcr","unep","fao","giz","usaid","dfid","fcdo","asian development bank","african development bank"];
+  if (multiNames.some(n => orgHints.includes(n))) orgType = "Multilateral/IGO";
+  else if (/ngo|non.?profit|nonprofit|501.?c3|charity|charitable organization/.test(orgHints)) orgType = "Non-profit/NGO";
+  else if (/oxfam|save the children|techo|care international|mercy corps|world vision|red cross|doctors without borders|amnesty|wwf|greenpeace/.test(orgHints)) orgType = "Non-profit/NGO";
+  else if (/government|ministry|federal agency|public sector agency|city of |state of /.test(orgHints)) orgType = "Government";
+  else if (/university|college|research institute|think tank|academia/.test(orgHints)) orgType = "Academia/Research";
 
   // Posting deadline - broader patterns
   let deadline = null;
@@ -518,198 +515,99 @@ function analyzeJob(job) {
   return { mission, seniority, remote, usCanAuth, comp, engagement, orgType, deadline, hardNo, geoOk, asiaOnly };
 }
 
-// Keyword relevance filter - built from Lorinde's CV + JDs (Wave CoS, UNDP Programme Specialist,
-// CHAI Manager, EQL Tech Program Lead, Cultivo Project Manager, Katapult CoS)
+// Keyword relevance filter - role title AND mission/context must both match
 function isRelevant(job) {
   const text = ((job.title||"") + " " + (job.description||"")).toLowerCase();
   const title = (job.title||"").toLowerCase();
+  const desc = (job.description||"").toLowerCase();
   const loc = (job.location||"").toLowerCase();
+  const company = (job.company||"").toLowerCase();
 
-  // Hard NO sectors
+  // ── HARD NO sectors ──
   const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons manufacturer","military contractor","gambling","casino","tobacco"];
   if (hardNoTerms.some(t => text.includes(t))) return false;
 
-  // Geography filter - skip APAC-only roles
+  // ── HARD NO companies ──
+  const hardNoCompanies = ["meta ","facebook","google","amazon","apple","microsoft","netflix","uber","airbnb","twitter","tiktok","bytedance","salesforce","oracle","sap ","workday","hubspot","dropbox","stripe","shopify","twilio","zendesk","datadog","snowflake","palantir","coinbase","kraken","binance","robinhood","hilton","marriott","hyatt","mcdonalds","starbucks","walmart","target ","nike ","adidas","lvmh","kpmg","ernst & young","ey ","pwc ","deloitte","accenture","bcg ","mckinsey","bain ","jp morgan","goldman sachs","morgan stanley","blackrock","blackstone","kkr ","carlyle","boeing","lockheed","raytheon","halliburton","schlumberger","chevron","exxon","shell ","bp ","total ","eni "];
+  if (hardNoCompanies.some(c => company.includes(c))) return false;
+
+  // ── GEOGRAPHY filter ──
   const apacOnly = /(singapore|hong kong|australia|sydney|new zealand|japan|china|india|southeast asia)\s*(?:only|based|office)/i.test(loc);
   if (apacOnly) return false;
-
-  // Must be remote OR in allowed regions
-  const allowedRegions = [
-    "remote","worldwide","global","anywhere","international",
-    // US
-    "united states","usa","u.s.","new york","washington","san francisco","chicago","boston",
-    // LatAm
-    "latin america","latam","argentina","brazil","mexico","colombia","chile","peru","uruguay","costa rica","central america","caribbean",
-    // Europe
-    "europe","european","uk","united kingdom","london","germany","berlin","france","paris","netherlands","amsterdam","spain","belgium","brussels","sweden","stockholm","switzerland","geneva","ireland","portugal","denmark","norway","finland","austria",
-    // Africa
-    "africa","african","kenya","nigeria","south africa","ghana","ethiopia","rwanda","senegal","tanzania","uganda"
-  ];
+  const allowedRegions = ["remote","worldwide","global","anywhere","international","united states","usa","u.s.","uk","united kingdom","europe","european","latin america","latam","argentina","brazil","mexico","colombia","chile","peru","uruguay","africa","kenya","nigeria","south africa","ghana","rwanda","germany","france","netherlands","belgium","sweden","switzerland","ireland","spain","portugal","denmark","norway","finland","austria","poland"];
   const isAllowedGeo = !loc || loc.trim() === "" || allowedRegions.some(r => loc.includes(r));
   if (!isAllowedGeo) return false;
 
-  // TITLE keywords - must match at least one
-  // Drawn from: Wave (Chief of Staff), UNDP (Programme Specialist), CHAI (Manager/Incubator),
-  // EQL (Program Lead), Cultivo (Project Manager), Katapult (Chief of Staff),
-  // Lorinde's CV roles and skills, career discussions
-  const titleKeywords = [
-    // Chief of Staff / Ops roles (Wave, Katapult)
-    "chief of staff","head of operations","chief operating","vp operations","director of operations",
-    // Programme/Project management (UNDP, Cultivo, CHAI)
-    "programme specialist","program specialist","programme manager","program manager",
-    "programme lead","program lead","project manager","project lead","project director",
-    // Strategy roles (BCG background, EQL)
-    "strategy manager","strategy lead","strategy director","strategic advisor","strategy officer",
-    "head of strategy","director of strategy","strategy and operations","strategy & operations",
-    // Innovation / Incubator (CHAI, EQL)
-    "innovation manager","innovation lead","innovation director","head of innovation",
-    "incubator manager","accelerator manager","ventures lead","new initiatives",
-    // Impact / Social impact
-    "impact manager","impact lead","impact director","social impact","head of impact",
-    "impact investing","impact officer","impact analyst",
-    // Policy / Public sector (UNDP, BCG public sector)
-    "policy manager","policy advisor","policy director","policy specialist","policy officer",
-    "public policy","policy lead","government affairs","regulatory affairs",
-    // Partnerships / BD (TECHO, UNDP)
-    "partnerships manager","partnerships director","partnerships lead","head of partnerships",
-    "business development","bd manager","strategic partnerships","external relations",
-    // Advisory / Consulting adjacent
-    "senior advisor","senior consultant","senior associate","management consultant",
-    "strategy consultant","independent consultant",
-    // Development (international dev, UNDP, CHAI)
-    "development manager","development director","country director","country manager",
-    "regional director","regional manager","area director",
-    // NGO/Foundation senior ops
-    "operations manager","operations director","chief of party","deputy director",
-    "executive director","programme coordinator","programme officer",
-    // Philanthropy / Grants (EQL)
-    "philanthropy","grants manager","grantmaking","foundation manager",
-    // Climate / Sustainability ops (Cultivo, BCG climate)
-    "sustainability manager","sustainability director","climate manager","climate lead",
-    "esg manager","net zero","transition manager","sustainability officer",
-    // FinTech / Financial inclusion (Wave, BCG fintech)
-    "fintech","financial inclusion","payments strategy","mobile money",
+  // ── ROLE TITLE must match ──
+  const roleKeywords = [
+    "chief of staff",
+    "head of strategy","head of operations","head of impact","head of partnerships","head of programmes","head of programs","head of innovation","head of policy",
+    "director of strategy","director of operations","director of impact","director of partnerships","director of programmes","director of programs","director of innovation","director of policy","director of development",
+    "strategy manager","strategy lead","strategy director","strategy officer","strategic advisor",
+    "programme manager","programme lead","programme specialist","programme officer","programme director",
+    "program manager","program lead","program specialist","program officer","program director",
+    "project manager","project lead","project director",
+    "innovation manager","innovation lead","innovation director",
+    "impact manager","impact lead","impact director","social impact",
+    "policy manager","policy advisor","policy director","policy specialist","policy officer","policy lead",
+    "partnerships manager","partnerships director","partnerships lead",
+    "country director","country manager","regional director","regional manager",
+    "chief of party","deputy director","executive director",
+    "senior advisor","senior consultant","senior associate",
+    "operations manager","operations director",
+    "development manager","development director",
+    "grants manager","grantmaking","philanthropy manager",
+    "sustainability manager","sustainability director","sustainability lead",
+    "financial inclusion","fintech strategy","payments strategy",
   ];
-  if (!titleKeywords.some(k => title.includes(k))) return false;
+  if (!roleKeywords.some(k => title.includes(k))) return false;
 
-  // Exclude clearly wrong role types - expanded
-  const excludeTitle = [
-    "software engineer","frontend engineer","backend engineer","full stack","full-stack",
-    "devops","data engineer","data scientist","machine learning engineer","ml engineer",
-    "ai engineer","cloud engineer","site reliability","security engineer",
-    "graphic designer","ux designer","ui designer","web designer","visual designer",
-    "accountant","bookkeeper","financial controller","tax specialist",
-    "sales representative","sales executive","account executive","account manager",
-    "recruiter","talent acquisition","hr manager","people ops",
-    "content writer","copywriter","seo specialist","social media manager",
-    "nurse","doctor","physician","pharmacist","driver","warehouse","customer support agent",
-    "customer success manager","customer service"
+  // ── EXCLUDE specific bad role patterns even if title keyword matched ──
+  const excludePatterns = [
+    "business development representative","business development manager","business development director",
+    "sales","account executive","account manager","account director",
+    "valuation","financial reporting","financial controller","tax","audit","bookkeep","accountant",
+    "facility","data center","infrastructure","real estate","construction",
+    "quality manager","quality director","head of quality",
+    "marketing","brand manager","growth manager","gtm","go-to-market","demand generation",
+    "customer success","customer insights","customer experience","cx manager",
+    "technical program","engineering program","software program",
+    "supply chain","procurement manager","logistics",
+    "hr manager","human resources","people manager","talent",
+    "legal","compliance manager","risk manager",
+    "pricing","revenue operations","sales operations",
+    "restaurant","hospitality","food service","chef",
+    "crypto","blockchain","web3","nft","defi",
   ];
-  if (excludeTitle.some(t => title.includes(t))) return false;
+  if (excludePatterns.some(t => title.includes(t))) return false;
+
+  // ── MUST have at least one mission signal in full text ──
+  // Role + company must relate to something Lorinde cares about
+  const missionSignals = [
+    // Climate & environment
+    "climate","clean energy","renewable","sustainability","net zero","carbon","emissions","environment","nature","green","cleantech","energy transition","circular",
+    // Global development & humanitarian
+    "global development","international development","developing countr","lmic","emerging market","humanitarian","poverty","aid ","oda ","undp","unicef","oxfam","ngo","non-profit","nonprofit","social enterprise","civil society",
+    // Health
+    "global health","public health","healthcare access","health equity","malaria","hiv","tuberculosis","maternal","chai","health system",
+    // AI safety & responsible tech
+    "ai safety","alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai","beneficial ai",
+    // Impact investing & financial inclusion
+    "impact invest","blended finance","social finance","microfinance","financial inclusion","impact capital","catalytic finance","development finance",
+    // Policy & governance
+    "public policy","social policy","policy reform","governance","democracy","rule of law","social protection",
+    // Education & social mobility
+    "education access","edtech","learning outcomes","literacy","social mobility","youth development",
+    // Housing & urban
+    "affordable housing","housing access","urban development","techo","habitat for humanity",
+    // Mission-driven org signals
+    "mission-driven","mission driven","social impact","positive impact","public good","social good","purpose-driven","b corp","benefit corporation","501c","charity","foundation grant",
+    // International orgs
+    "world bank","imf ","usaid","dfid","fcdo","giz ","idb ","ifc ","asian development","african development","inter-american",
+  ];
+  if (!missionSignals.some(s => text.includes(s))) return false;
 
   return true;
-}
-
-// ── FETCH SOURCES ──
-// Auto-fetched: Remotive | Jobicy (keyword) | We Work Remotely (RSS) | Himalayas
-// Manual check weekly: 80,000 Hours | Climatebase | ImpactPool | EA Board | Idealist | Work on Climate | Apolitical | Probably Good
-
-function stripHtml(s) {
-  return (s||"").replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
-}
-
-async function fetchRemotive() {
-  try {
-    const categories = ["management","all-others","business"];
-    let allJobs = [];
-    for (const cat of categories) {
-      const r = await fetch(`https://remotive.com/api/remote-jobs?category=${cat}&limit=100`);
-      if (!r.ok) continue;
-      const data = await r.json();
-      allJobs.push(...(data.jobs||[]).map(j => ({
-        title: j.title, company: j.company_name, url: j.url,
-        location: j.candidate_required_location,
-        description: stripHtml(j.description),
-        source: "Remotive"
-      })));
-    }
-    console.log(`Remotive raw: ${allJobs.length}`);
-    return allJobs;
-  } catch(e) { console.warn("Remotive failed:", e); return []; }
-}
-
-async function fetchJobicy() {
-  // Keyword-targeted search for Lorinde's role types
-  try {
-    const tags = ["strategy","program manager","chief of staff","impact","policy","innovation","partnerships","programme","development director","operations director"];
-    let allJobs = [];
-    const seen = new Set();
-    for (const tag of tags) {
-      const r = await fetch(`https://jobicy.com/api/v2/remote-jobs?count=20&tag=${encodeURIComponent(tag)}`);
-      if (!r.ok) continue;
-      const data = await r.json();
-      for (const j of (data.jobs||[])) {
-        if (seen.has(j.url)) continue;
-        seen.add(j.url);
-        allJobs.push({ title: j.jobTitle, company: j.companyName, url: j.url, location: j.jobGeo, description: stripHtml(j.jobDescription), source: "Jobicy" });
-      }
-      await new Promise(r => setTimeout(r, 150));
-    }
-    console.log(`Jobicy raw: ${allJobs.length}`);
-    return allJobs;
-  } catch(e) { console.warn("Jobicy failed:", e); return []; }
-}
-
-async function fetchWeWorkRemotely() {
-  // RSS feed - management & finance + product categories
-  try {
-    const feeds = [
-      "https://weworkremotely.com/categories/remote-management-and-finance-jobs.rss",
-      "https://weworkremotely.com/categories/remote-product-jobs.rss"
-    ];
-    let allJobs = [];
-    for (const feedUrl of feeds) {
-      const r = await fetch(feedUrl);
-      if (!r.ok) continue;
-      const text = await r.text();
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(text, "text/xml");
-      const items = Array.from(xml.querySelectorAll("item"));
-      allJobs.push(...items.map(item => {
-        const rawTitle = item.querySelector("title")?.textContent || "";
-        const parts = rawTitle.split(":");
-        const company = parts[0]?.replace(/<!\[CDATA\[/g,"").replace(/\]\]>/g,"").trim() || "";
-        const title = parts.slice(1).join(":").trim() || rawTitle;
-        return {
-          title: title.replace(/<!\[CDATA\[/g,"").replace(/\]\]>/g,"").trim(),
-          company,
-          url: item.querySelector("link")?.textContent?.trim() || "",
-          location: "Remote",
-          description: stripHtml(item.querySelector("description")?.textContent || ""),
-          source: "We Work Remotely"
-        };
-      }).filter(j => j.title && j.url));
-    }
-    console.log(`We Work Remotely raw: ${allJobs.length}`);
-    return allJobs;
-  } catch(e) { console.warn("We Work Remotely failed:", e); return []; }
-}
-
-async function fetchHimalayas() {
-  try {
-    const r = await fetch("https://himalayas.app/jobs/api?limit=100");
-    if (!r.ok) return [];
-    const data = await r.json();
-    const jobs = (data.jobs || []).map(j => ({
-      title: j.title, company: j.companyName || j.company || "",
-      url: j.applicationUrl || j.url || "",
-      location: j.location || "Remote",
-      description: stripHtml(j.description || j.about || ""),
-      source: "Himalayas"
-    }));
-    console.log(`Himalayas raw: ${jobs.length}`);
-    return jobs;
-  } catch(e) { console.warn("Himalayas failed:", e); return []; }
 }
 
 async function clearFeed() {
