@@ -207,6 +207,7 @@
     </div>
     <div class="feed-controls">
       <button class="refresh-btn" id="refresh-btn" onclick="refreshFeed()">⟳ Refresh Feed</button>
+      <button class="refresh-btn" style="color:#f87171;border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.08)" onclick="clearFeed()">✕ Clear Feed</button>
     </div>
   </div>
 
@@ -363,349 +364,258 @@ function analyzeJob(job) {
   const text = ((job.title || "") + " " + (job.description || "") + " " + (job.location || "")).toLowerCase();
   const title = (job.title || "").toLowerCase();
   const desc = (job.description || "").toLowerCase();
+  const loc = (job.location || "").toLowerCase();
 
   // Mission detection
   const missionMap = [
-    { label: "Climate", terms: ["climate","clean energy","renewable","sustainability","net zero","carbon","emissions","green","environment","nature"] },
-    { label: "Global Dev", terms: ["global development","international development","developing countries","lmic","emerging markets","humanitarian","poverty","aid","oda"] },
-    { label: "Health", terms: ["health","medical","healthcare","public health","pandemic","disease","wellbeing","mental health","biotech","pharma"] },
-    { label: "AI Safety", terms: ["ai safety","alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai"] },
-    { label: "Impact Investing", terms: ["impact invest","esg","blended finance","social finance","microfinance","financial inclusion","impact capital"] },
-    { label: "Education", terms: ["education","edtech","learning","university","school","skills","training"] },
-    { label: "Policy", terms: ["policy","government","public sector","regulation","advocacy","democracy","governance"] },
-    { label: "Housing", terms: ["housing","shelter","homelessness","urban","community development"] },
-    { label: "Food/Ag", terms: ["food","agriculture","food security","nutrition","alternative protein"] },
-    { label: "Tech for Good", terms: ["tech for good","civic tech","social tech","nonprofit tech","digital public"] },
-    { label: "Innovation", terms: ["innovation","startup","venture","accelerator","incubator"] },
+    { label: "Climate", terms: ["climate","clean energy","renewable","sustainability","net zero","carbon","emissions","green","environment","nature","cleantech","energy transition"] },
+    { label: "Global Dev", terms: ["global development","international development","developing countries","lmic","emerging markets","humanitarian","poverty","aid","oda","undp","world bank","unicef","oxfam","relief"] },
+    { label: "Health", terms: ["health","medical","healthcare","public health","pandemic","disease","wellbeing","mental health","biotech","pharma","global health","chai","malaria","hiv"] },
+    { label: "AI Safety", terms: ["ai safety","alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai","agi","anthropic","deepmind","openai"] },
+    { label: "Impact Investing", terms: ["impact invest","esg","blended finance","social finance","microfinance","financial inclusion","impact capital","venture philanthropy","catalytic"] },
+    { label: "Education", terms: ["education","edtech","learning","university","school","skills","training","literacy","higher education"] },
+    { label: "Policy", terms: ["policy","government","public sector","regulation","advocacy","democracy","governance","think tank","diplomacy"] },
+    { label: "Housing", terms: ["housing","shelter","homelessness","urban","community development","techo","habitat"] },
+    { label: "Food/Ag", terms: ["food","agriculture","food security","nutrition","alternative protein","food systems"] },
+    { label: "Tech for Good", terms: ["tech for good","civic tech","social tech","nonprofit tech","digital public","responsible tech"] },
+    { label: "Innovation", terms: ["innovation","startup","venture","accelerator","incubator","social enterprise"] },
+    { label: "Financial Inclusion", terms: ["financial inclusion","microfinance","fintech","payments","banking","remittance","unbanked"] },
   ];
   let mission = "General";
   for (const m of missionMap) {
     if (m.terms.some(t => text.includes(t))) { mission = m.label; break; }
   }
 
-  // Seniority / years required
+  // Seniority - try multiple patterns
   let seniority = null;
-  const yrMatch = desc.match(/(\d+)\+?\s*(?:to\s*\d+\s*)?years?\s*(?:of\s*)?(?:experience|exp)/i);
-  if (yrMatch) seniority = yrMatch[1] + "+ yrs";
-  else if (/senior|lead|director|head of|principal|vp |vice president|manager|chief/.test(title)) seniority = "Senior";
-  else if (/junior|entry|associate|assistant|coordinator/.test(title)) seniority = "Junior";
-  else if (/mid|analyst|specialist|officer/.test(title)) seniority = "Mid";
+  // Pattern: "5+ years" or "5-7 years" or "minimum 5 years"
+  const yrPatterns = [
+    /(\d+)\s*\+\s*years?\s*(?:of\s*)?(?:experience|exp)/i,
+    /(\d+)\s*to\s*\d+\s*years?\s*(?:of\s*)?(?:experience|exp)/i,
+    /minimum\s*(?:of\s*)?(\d+)\s*years?\s*(?:of\s*)?(?:experience|exp)/i,
+    /at\s*least\s*(\d+)\s*years?\s*(?:of\s*)?(?:experience|exp)/i,
+    /(\d+)\s*years?\s*(?:of\s*)?(?:relevant\s*)?(?:professional\s*)?(?:experience|exp)/i,
+  ];
+  for (const p of yrPatterns) {
+    const m = desc.match(p);
+    if (m) { seniority = m[1] + "+ yrs exp"; break; }
+  }
+  // Fallback to title keywords
+  if (!seniority) {
+    if (/vp|vice president|chief |c-suite/.test(title)) seniority = "Executive";
+    else if (/senior|lead|director|head of|principal|manager/.test(title)) seniority = "Senior (5-10 yrs)";
+    else if (/junior|entry.?level|associate|coordinator|assistant/.test(title)) seniority = "Junior (0-3 yrs)";
+    else if (/mid.?level|analyst|specialist|officer/.test(title)) seniority = "Mid (3-5 yrs)";
+  }
 
-  // Remote detection
-  let remote = "Unclear";
-  if (/remote/.test(text) && !/not remote|no remote|on.?site only/.test(text)) remote = "Yes";
-  else if (/on.?site|in.?office|in.?person|must be located|must reside|relocation/.test(text)) remote = "No";
+  // Remote detection - stricter
+  let remote = "No"; // default to No, only Yes if explicit
+  if (/remote/.test(loc) || /remote/.test(title)) {
+    remote = "Yes";
+  } else if (/remote/.test(desc) && !/not remote|no remote|on.?site|in.?office|hybrid|in.?person/.test(desc.slice(0,500))) {
+    remote = "Yes";
+  } else if (/hybrid/.test(text)) {
+    remote = "Hybrid";
+  } else if (/on.?site|in.?office|in.?person/.test(text)) {
+    remote = "No";
+  } else {
+    remote = "Unclear";
+  }
 
-  // US/CAN work auth
+  // Geography filter - only US, LatAm, Europe, Africa, or global/remote
+  const geoText = (loc + " " + desc.slice(0,300)).toLowerCase();
+  const allowedGeo = [
+    "remote","worldwide","global","anywhere","international",
+    // US
+    "united states","usa","u.s.","new york","san francisco","washington","chicago","boston","los angeles","seattle","austin","denver",
+    // LatAm
+    "latin america","latam","argentina","brazil","mexico","colombia","chile","peru","uruguay","costa rica","ecuador","bolivia","paraguay","venezuela","central america","caribbean",
+    // Europe
+    "europe","european","uk","united kingdom","london","germany","berlin","france","paris","netherlands","amsterdam","spain","madrid","switzerland","geneva","zurich","sweden","stockholm","belgium","brussels","ireland","dublin","italy","rome","milan","portugal","lisbon","denmark","norway","finland","austria","poland",
+    // Africa
+    "africa","african","kenya","nairobi","nigeria","lagos","south africa","johannesburg","cape town","ghana","accra","ethiopia","rwanda","senegal","tanzania","uganda","mozambique","zimbabwe",
+  ];
+  const geoOk = allowedGeo.some(g => geoText.includes(g));
+  // Block Asia-Pacific only roles
+  const asiaOnly = /(singapore|hong kong|australia|sydney|melbourne|new zealand|japan|tokyo|china|beijing|shanghai|india|bangalore|mumbai|southeast asia|apac|asia.pacific)\s*(?:only|based|office|required)/i.test(geoText) && !geoOk;
+
+  // US/CAN work auth - improved
   let usCanAuth = "No";
-  if (/must be (?:authorized|eligible|permitted) to work in (?:the )?(?:us|u\.s|united states|canada)|us citizen|authorized to work in the united states|right to work in (?:the )?(?:us|canada)|work authorization|visa sponsorship (not|won't|cannot)|no visa|no sponsorship/i.test(desc)) usCanAuth = "Yes";
-  else if (/visa sponsorship|sponsorship available|sponsorship provided|work authorization provided/i.test(desc)) usCanAuth = "No";
-  else if (/united states|u\.s\. only|us-based|us residents/i.test(text)) usCanAuth = "Unclear";
+  const authYesTerms = [
+    "must be authorized to work in the us",
+    "must be authorized to work in the united states",
+    "us work authorization required",
+    "authorized to work in the united states",
+    "eligible to work in the us",
+    "right to work in the us",
+    "right to work in the united states",
+    "us citizen",
+    "green card",
+    "no visa sponsorship",
+    "unable to sponsor",
+    "cannot sponsor",
+    "will not sponsor",
+    "sponsorship is not available",
+    "must be legally authorized",
+    "work permit required",
+  ];
+  if (authYesTerms.some(t => desc.includes(t))) usCanAuth = "Yes";
+  else if (/visa sponsorship (is )?available|we (do )?sponsor|sponsorship provided|open to sponsorship/i.test(desc)) usCanAuth = "No";
+  else if (/(united states|u\.s\.) only|must be (located|based|residing) in/i.test(desc)) usCanAuth = "Unclear";
 
-  // Comp range
+  // Comp range - improved patterns
   let comp = null;
-  const compMatch = desc.match(/\$[\d,]+(?:k)?(?:\s*[-–]\s*\$?[\d,]+(?:k)?)?(?:\s*(?:per year|\/yr|annually|USD))?/i);
-  if (compMatch) comp = compMatch[0].replace(/\s+/g," ").trim();
+  const compPatterns = [
+    /\$[\d,]+k?\s*[-–to]+\s*\$?[\d,]+k?/i,
+    /\$[\d,]+k?\s*(?:per year|\/year|annually|per annum|usd)/i,
+    /(?:salary|compensation|pay)[:\s]+\$[\d,]+/i,
+    /[\d,]+\s*[-–]\s*[\d,]+\s*(?:USD|EUR|GBP)/i,
+  ];
+  for (const p of compPatterns) {
+    const m = desc.match(p);
+    if (m) { comp = m[0].trim(); break; }
+  }
 
   // Engagement type
   let engagement = "Full-time";
   if (/part.?time/i.test(text)) engagement = "Part-time";
-  else if (/contract|freelance|consultancy|consulting/i.test(text)) engagement = "Contract";
-  else if (/fellowship|fellow/i.test(text)) engagement = "Fellowship";
-  else if (/internship|intern/i.test(text)) engagement = "Internship";
+  else if (/fellowship|fellow/i.test(text)) engagement = "Fellowship";
+  else if (/internship|intern/i.test(text)) engagement = "Internship";
+  else if (/contract|freelance/i.test(text)) engagement = "Contract";
   else if (/short.?term|temporary/i.test(text)) engagement = "Short-term";
 
-  // Org type
-  let orgType = "Unknown";
-  if (/startup|seed|series [a-c]|early.?stage|founded in 20[12]\d/.test(desc)) orgType = "Startup";
-  else if (/scale.?up|growth.?stage|series [d-f]/.test(desc)) orgType = "Scale-up";
-  else if (/ngo|non.?profit|nonprofit|charity|foundation|501c3|civil society/.test(text)) orgType = "NGO/Non-profit";
-  else if (/united nations|world bank|imf|who|oecd|idb|undp|unicef|multilateral|intergovernmental/.test(text)) orgType = "Multilateral/IGO";
-  else if (/government|ministry|federal|state agency|public sector|municipality/.test(text)) orgType = "Government";
-  else if (/university|research institute|think tank|academia|academic/.test(text)) orgType = "Academia/Research";
-  else if (/foundation/.test(text)) orgType = "Foundation";
-  else orgType = "Corporate";
+  // Org type - use known org names + description signals
+  let orgType = "Corporate"; // default
+  const knownNGOs = ["oxfam","save the children","techo","care international","mercy corps","world vision","red cross","unicef","undp","who ","oecd","world bank","ifc","idb","giz","usaid","dfid","gates foundation","rockefeller","ford foundation","open society","wellcome trust","skoll","omidyar","hewlett","mckinsey","bcg","bain","deloitte","accenture","mckinsey","pwc"];
+  const orgHints = (job.company || "").toLowerCase() + " " + desc.slice(0,400);
+  if (knownNGOs.slice(0,14).some(n => orgHints.includes(n))) orgType = "Multilateral/IGO";
+  else if (knownNGOs.slice(14,22).some(n => orgHints.includes(n))) orgType = "Foundation";
+  else if (/ngo|non.?profit|nonprofit|charity|501.?c3|civil society|social enterprise/i.test(orgHints)) orgType = "NGO/Non-profit";
+  else if (/series [a-c]|seed stage|early.?stage|pre.?series|angel round/i.test(orgHints)) orgType = "Startup";
+  else if (/series [d-f]|growth.?stage|scale.?up/i.test(orgHints)) orgType = "Scale-up";
+  else if (/foundation/i.test(job.company || "")) orgType = "Foundation";
+  else if (/university|research institute|think tank|academia/i.test(orgHints)) orgType = "Academia/Research";
+  else if (/government|ministry|federal|municipality|public sector/i.test(orgHints)) orgType = "Government";
+  else if (/startup|founded in 20[12]\d|we are a small team|early.?stage/i.test(orgHints)) orgType = "Startup";
 
-  // Posting deadline - look for closing/deadline date
+  // Posting deadline - broader patterns
   let deadline = null;
-  const dlMatch = desc.match(/(?:deadline|closing date|apply by|applications? (?:due|close)|closes?)[:\s]+([A-Z][a-z]+ \d{1,2},?\s*\d{4}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i);
-  if (dlMatch) deadline = dlMatch[1].trim();
+  const dlPatterns = [
+    /(?:deadline|closing date|apply by|applications?\s+(?:due|close[sd]?)|closes?\s+on)[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})/i,
+    /(?:deadline|closing date|apply by)[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+    /open until[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})/i,
+    /position (?:open|available) until[:\s]+([A-Za-z]+ \d{1,2})/i,
+  ];
+  for (const p of dlPatterns) {
+    const m = desc.match(p);
+    if (m) { deadline = m[1].trim(); break; }
+  }
 
   // Hard NO detection
-  const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons","military contractor","gambling","casino","tobacco","cigarette"];
+  const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons manufacturer","military contractor","gambling","casino","tobacco","cigarette manufacturer"];
   const hardNo = hardNoTerms.some(t => text.includes(t));
 
-  return { mission, seniority, remote, usCanAuth, comp, engagement, orgType, deadline, hardNo };
+  return { mission, seniority, remote, usCanAuth, comp, engagement, orgType, deadline, hardNo, geoOk, asiaOnly };
 }
 
-// Keyword relevance filter (replaces AI scoring)
+// Keyword relevance filter - built from Lorinde's CV + JDs (Wave CoS, UNDP Programme Specialist,
+// CHAI Manager, EQL Tech Program Lead, Cultivo Project Manager, Katapult CoS)
 function isRelevant(job) {
   const text = ((job.title||"") + " " + (job.description||"")).toLowerCase();
   const title = (job.title||"").toLowerCase();
+  const loc = (job.location||"").toLowerCase();
 
-  // Hard NO - discard immediately
-  const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons","military contractor","gambling","casino","tobacco","cigarette"];
+  // Hard NO sectors
+  const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons manufacturer","military contractor","gambling","casino","tobacco"];
   if (hardNoTerms.some(t => text.includes(t))) return false;
 
-  // Must match at least one role keyword
-  const roleKeywords = ["chief of staff","strategy","program lead","program manager","project lead","implementation","advisory","impact","innovation","policy","operations","development manager","country director","partnerships","head of","director of","senior manager","senior advisor","senior consultant","senior associate"];
-  const hasRole = roleKeywords.some(k => title.includes(k));
-  if (!hasRole) return false;
+  // Geography filter - skip APAC-only roles
+  const apacOnly = /(singapore|hong kong|australia|sydney|new zealand|japan|china|india|southeast asia)\s*(?:only|based|office)/i.test(loc);
+  if (apacOnly) return false;
 
-  // Exclude clearly wrong roles
-  const excludeTerms = ["engineer","developer","designer","data scientist","accountant","sales representative","recruiter","marketing manager","content writer","copywriter","nurse","driver"];
-  if (excludeTerms.some(t => title.includes(t))) return false;
+  // Must be remote OR in allowed regions
+  const allowedRegions = [
+    "remote","worldwide","global","anywhere","international",
+    // US
+    "united states","usa","u.s.","new york","washington","san francisco","chicago","boston",
+    // LatAm
+    "latin america","latam","argentina","brazil","mexico","colombia","chile","peru","uruguay","costa rica","central america","caribbean",
+    // Europe
+    "europe","european","uk","united kingdom","london","germany","berlin","france","paris","netherlands","amsterdam","spain","belgium","brussels","sweden","stockholm","switzerland","geneva","ireland","portugal","denmark","norway","finland","austria",
+    // Africa
+    "africa","african","kenya","nigeria","south africa","ghana","ethiopia","rwanda","senegal","tanzania","uganda"
+  ];
+  const isAllowedGeo = !loc || loc.trim() === "" || allowedRegions.some(r => loc.includes(r));
+  if (!isAllowedGeo) return false;
+
+  // TITLE keywords - must match at least one
+  // Drawn from: Wave (Chief of Staff), UNDP (Programme Specialist), CHAI (Manager/Incubator),
+  // EQL (Program Lead), Cultivo (Project Manager), Katapult (Chief of Staff),
+  // Lorinde's CV roles and skills, career discussions
+  const titleKeywords = [
+    // Chief of Staff / Ops roles (Wave, Katapult)
+    "chief of staff","head of operations","chief operating","vp operations","director of operations",
+    // Programme/Project management (UNDP, Cultivo, CHAI)
+    "programme specialist","program specialist","programme manager","program manager",
+    "programme lead","program lead","project manager","project lead","project director",
+    // Strategy roles (BCG background, EQL)
+    "strategy manager","strategy lead","strategy director","strategic advisor","strategy officer",
+    "head of strategy","director of strategy","strategy and operations","strategy & operations",
+    // Innovation / Incubator (CHAI, EQL)
+    "innovation manager","innovation lead","innovation director","head of innovation",
+    "incubator manager","accelerator manager","ventures lead","new initiatives",
+    // Impact / Social impact
+    "impact manager","impact lead","impact director","social impact","head of impact",
+    "impact investing","impact officer","impact analyst",
+    // Policy / Public sector (UNDP, BCG public sector)
+    "policy manager","policy advisor","policy director","policy specialist","policy officer",
+    "public policy","policy lead","government affairs","regulatory affairs",
+    // Partnerships / BD (TECHO, UNDP)
+    "partnerships manager","partnerships director","partnerships lead","head of partnerships",
+    "business development","bd manager","strategic partnerships","external relations",
+    // Advisory / Consulting adjacent
+    "senior advisor","senior consultant","senior associate","management consultant",
+    "strategy consultant","independent consultant",
+    // Development (international dev, UNDP, CHAI)
+    "development manager","development director","country director","country manager",
+    "regional director","regional manager","area director",
+    // NGO/Foundation senior ops
+    "operations manager","operations director","chief of party","deputy director",
+    "executive director","programme coordinator","programme officer",
+    // Philanthropy / Grants (EQL)
+    "philanthropy","grants manager","grantmaking","foundation manager",
+    // Climate / Sustainability ops (Cultivo, BCG climate)
+    "sustainability manager","sustainability director","climate manager","climate lead",
+    "esg manager","net zero","transition manager","sustainability officer",
+    // FinTech / Financial inclusion (Wave, BCG fintech)
+    "fintech","financial inclusion","payments strategy","mobile money",
+  ];
+  if (!titleKeywords.some(k => title.includes(k))) return false;
+
+  // Exclude clearly wrong role types - expanded
+  const excludeTitle = [
+    "software engineer","frontend engineer","backend engineer","full stack","full-stack",
+    "devops","data engineer","data scientist","machine learning engineer","ml engineer",
+    "ai engineer","cloud engineer","site reliability","security engineer",
+    "graphic designer","ux designer","ui designer","web designer","visual designer",
+    "accountant","bookkeeper","financial controller","tax specialist",
+    "sales representative","sales executive","account executive","account manager",
+    "recruiter","talent acquisition","hr manager","people ops",
+    "content writer","copywriter","seo specialist","social media manager",
+    "nurse","doctor","physician","pharmacist","driver","warehouse","customer support agent",
+    "customer success manager","customer service"
+  ];
+  if (excludeTitle.some(t => title.includes(t))) return false;
 
   return true;
 }
 
-// ── TAB SWITCHING ──
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='pipeline')||(i===1&&tab==='feed')));
-  document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
-  document.getElementById('tab-feed').classList.toggle('active', tab==='feed');
-  if (tab === 'feed') loadFeed();
-}
-
-// ── PIPELINE LOGIC ──
-function stars(n, color) {
-  const filled = Math.min(Math.max(parseInt(n)||0, 0), 5);
-  return `<span class="stars" style="color:${color}">${"★".repeat(filled)}${"☆".repeat(5-filled)}</span>`;
-}
-function normalizeStatus(s) {
-  if (!s) return "Researching";
-  const map = { "researching":"Researching","applied":"Applied","interviewing":"Interviewing","offer":"Offer","rejected":"Rejected","on hold":"On Hold" };
-  return map[s.toLowerCase()] || s;
-}
-function normalizePriority(p) {
-  if (!p) return "Medium";
-  const map = { "high":"High","medium":"Medium","low":"Low" };
-  return map[p.toLowerCase()] || p;
-}
-function showStatus(msg, isErr) {
-  const m = document.getElementById("meta");
-  const base = metaText();
-  m.innerHTML = base + `<span class="${isErr?'save-err':'save-ok'}">${msg}</span>`;
-  setTimeout(() => m.innerHTML = base, 2500);
-}
-async function load() {
-  try { jobs = await dbGet(); render(); }
-  catch(e) { document.getElementById("kanban-view").innerHTML = `<div class="loading" style="color:#f87171">Failed to connect.</div>`; }
-}
-function metaText() {
-  const interviewing = jobs.filter(j => (j.status||"").toLowerCase() === "interviewing").length;
-  const urg = urgentJobs().length;
-  return `${jobs.length} roles · ${interviewing} interviewing · ${urg} urgent`;
-}
-function urgentJobs() {
-  return jobs.filter(j => {
-    if (!j.deadline) return false;
-    const days = Math.ceil((new Date(j.deadline) - new Date()) / 86400000);
-    return days >= 0 && days <= 7;
-  });
-}
-function render() {
-  document.getElementById("meta").innerHTML = metaText();
-  renderUrgent();
-  const normalized = jobs.map(j => ({ ...j, status: normalizeStatus(j.status), priority: normalizePriority(j.priority) }));
-  const filtered = currentFilter === "All" ? normalized : normalized.filter(j => j.priority === currentFilter);
-  document.getElementById("filter-count").textContent = filtered.length + " roles shown";
-  if (currentView === "kanban") renderKanban(filtered);
-  else renderTable(filtered);
-}
-function renderUrgent() {
-  const urg = urgentJobs();
-  const bar = document.getElementById("urgent-bar");
-  if (!urg.length) { bar.classList.add("hidden"); return; }
-  bar.classList.remove("hidden");
-  bar.innerHTML = '<span class="urgent-label">⚡ DEADLINE SOON</span>' +
-    urg.map(j => {
-      const days = Math.ceil((new Date(j.deadline) - new Date()) / 86400000);
-      return `<span class="urgent-tag" data-id="${j.id}">${j.company} — ${days===0?"TODAY":days+"d"}</span>`;
-    }).join("");
-}
-function renderKanban(filtered) {
-  const kv = document.getElementById("kanban-view");
-  kv.classList.remove("hidden");
-  document.getElementById("table-view").classList.add("hidden");
-  const statuses = STATUSES.filter(s => !["Rejected","On Hold"].includes(s) || filtered.some(j=>j.status===s));
-  kv.innerHTML = statuses.map(status => {
-    const c = STATUS_COLORS[status];
-    const cols = filtered.filter(j => j.status === status).sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
-    return `<div class="column">
-      <div class="col-header">
-        <span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${status.toUpperCase()}</span>
-        <span class="col-count">${cols.length}</span>
-      </div>
-      ${cols.map(job => {
-        const pc = PRIORITY_COLORS[job.priority]||{bg:"#FEF3C7",text:"#D97706"};
-        const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "";
-        return `<div class="card" data-id="${job.id}">
-          <div class="card-top">
-            <div><div class="card-company">${job.company||""}</div><div class="card-role">${job.role||""}</div></div>
-            <span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${job.priority||""}</span>
-          </div>
-          ${job.next_action ? `<div class="next-action-strip">→ ${job.next_action}</div>` : ""}
-          <div class="card-bottom"><span style="font-size:10px;color:#555;font-family:monospace">${dl}</span></div>
-        </div>`;
-      }).join("")}
-    </div>`;
-  }).join("");
-}
-function renderTable(filtered) {
-  document.getElementById("kanban-view").classList.add("hidden");
-  const tv = document.getElementById("table-view");
-  tv.classList.remove("hidden");
-  const sorted = [...filtered].sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
-  tv.innerHTML = `<table><thead><tr>${["Company","Role","Status","Priority","Fit","Interest","Salary","Deadline","Next Action","Source"].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>
-    ${sorted.map(job => {
-      const c = STATUS_COLORS[job.status]||{};
-      const pc = PRIORITY_COLORS[job.priority]||{};
-      const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "—";
-      return `<tr class="data-row" data-id="${job.id}">
-        <td style="font-weight:600;white-space:nowrap">${job.company||""}</td>
-        <td style="color:#888;font-size:12px">${job.role||""}</td>
-        <td><span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};padding:2px 9px;border-radius:20px;font-family:monospace;font-size:10px">${job.status||""}</span></td>
-        <td><span class="priority-badge" style="background:${pc.bg};color:${pc.text};font-size:10px;padding:2px 7px">${job.priority||""}</span></td>
-        <td>${stars(job.fit,"#F0D080")}</td>
-        <td>${stars(job.interest,"#A78BFA")}</td>
-        <td style="color:#666;font-size:12px;white-space:nowrap">${job.salary||"—"}</td>
-        <td style="color:#555;font-family:monospace;font-size:11px;white-space:nowrap">${dl}</td>
-        <td style="color:#C9A84C;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${job.next_action||"—"}</td>
-        <td style="color:#777;font-size:12px">${job.source||"—"}</td>
-      </tr>`;
-    }).join("")}
-  </tbody></table>`;
-}
-function openDetail(id) {
-  const job = jobs.find(j => String(j.id) === String(id));
-  if (!job) return;
-  const status = normalizeStatus(job.status);
-  const priority = normalizePriority(job.priority);
-  document.getElementById("d-company").textContent = job.company||"";
-  document.getElementById("d-role").textContent = job.role||"";
-  const linkEl = document.getElementById("d-link");
-  if (job.link) { linkEl.href = job.link; linkEl.textContent = "→ View Job Description"; linkEl.classList.remove("hidden"); }
-  else linkEl.classList.add("hidden");
-  document.getElementById("d-status-btns").innerHTML = STATUSES.map(s => {
-    const sc = STATUS_COLORS[s]; const active = status === s;
-    return `<button class="status-btn" style="border:1px solid ${sc.border};background:${active?sc.bg:"transparent"};color:${active?sc.text:"#555"}" onclick="changeStatus('${id}','${s}')">${s}</button>`;
-  }).join("");
-  const pc = PRIORITY_COLORS[priority]||{};
-  document.getElementById("d-info-grid").innerHTML = [
-    ["Priority", `<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${priority}</span>`],
-    ["Salary", job.salary||"—"],
-    ["Deadline", job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}) : "—"],
-    ["Source", job.source||"—"],
-    ["Fit ⚡", stars(job.fit,"#F0D080")],
-    ["Interest ♥", stars(job.interest,"#A78BFA")],
-  ].map(([l,v])=>`<div class="info-cell"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join("");
-  const naBlock = document.getElementById("d-next-action-block");
-  if (job.next_action) { naBlock.classList.remove("hidden"); document.getElementById("d-next-action").textContent = job.next_action; }
-  else naBlock.classList.add("hidden");
-  const notesBlock = document.getElementById("d-notes-block");
-  if (job.notes) { notesBlock.classList.remove("hidden"); document.getElementById("d-notes").textContent = job.notes; }
-  else notesBlock.classList.add("hidden");
-  document.getElementById("d-edit-btn").onclick = () => { closeDetailModal(); openForm(id); };
-  document.getElementById("d-delete-btn").onclick = () => { if(confirm("Delete this role?")) { deleteJob(id); closeDetailModal(); } };
-  document.getElementById("detail-overlay").classList.remove("hidden");
-}
-function closeDetailModal() { document.getElementById("detail-overlay").classList.add("hidden"); }
-function closeFormModal() { document.getElementById("form-overlay").classList.add("hidden"); }
-async function changeStatus(id, status) {
-  await dbUpdate(id, { status: status.toLowerCase() });
-  jobs = await dbGet(); render(); openDetail(id); showStatus("✓ updated");
-}
-async function deleteJob(id) {
-  await dbDelete(id); jobs = await dbGet(); render(); showStatus("✓ deleted");
-}
-function openForm(id) {
-  editingId = id;
-  const job = id ? jobs.find(j => String(j.id) === String(id)) : null;
-  document.getElementById("form-title").textContent = id ? "Edit Role" : "Add New Role";
-  document.getElementById("f-company").value    = job?.company    || "";
-  document.getElementById("f-role").value       = job?.role       || "";
-  document.getElementById("f-status").value     = (job?.status    || "researching").toLowerCase();
-  document.getElementById("f-priority").value   = (job?.priority  || "medium").toLowerCase();
-  document.getElementById("f-salary").value     = job?.salary     || "";
-  document.getElementById("f-deadline").value   = job?.deadline   || "";
-  document.getElementById("f-source").value     = job?.source     || "";
-  document.getElementById("f-fit").value        = job?.fit        || 3;
-  document.getElementById("f-interest").value   = job?.interest   || 3;
-  document.getElementById("f-link").value       = job?.link       || "";
-  document.getElementById("f-next-action").value = job?.next_action || "";
-  document.getElementById("f-notes").value      = job?.notes      || "";
-  document.getElementById("form-overlay").classList.remove("hidden");
-}
-async function saveForm() {
-  const payload = {
-    company: document.getElementById("f-company").value.trim(),
-    role: document.getElementById("f-role").value.trim(),
-    status: document.getElementById("f-status").value,
-    priority: document.getElementById("f-priority").value,
-    salary: document.getElementById("f-salary").value.trim(),
-    deadline: document.getElementById("f-deadline").value || null,
-    source: document.getElementById("f-source").value.trim(),
-    fit: parseInt(document.getElementById("f-fit").value) || null,
-    interest: parseInt(document.getElementById("f-interest").value) || null,
-    link: document.getElementById("f-link").value.trim() || null,
-    next_action: document.getElementById("f-next-action").value.trim(),
-    notes: document.getElementById("f-notes").value.trim(),
-  };
-  closeFormModal();
-  if (editingId) { await dbUpdate(editingId, payload); showStatus("✓ saved"); }
-  else { await dbInsert(payload); showStatus("✓ added"); }
-  jobs = await dbGet(); render();
-}
-function setView(v) {
-  currentView = v;
-  document.getElementById("btn-kanban").classList.toggle("active", v==="kanban");
-  document.getElementById("btn-table").classList.toggle("active", v==="table");
-  render();
-}
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  render();
-}
-
-// ── FEED LOGIC ──
-function setProgress(msg) {
-  const bar = document.getElementById("progress-bar");
-  bar.classList.add("visible");
-  bar.textContent = msg;
-}
-function hideProgress() { document.getElementById("progress-bar").classList.remove("visible"); }
-
-async function fetchRemotive() {
-  try {
-    const categories = ["management","business","all-others"];
-    let allJobs = [];
-    for (const cat of categories) {
-      const r = await fetch(`https://remotive.com/api/remote-jobs?category=${cat}&limit=50`);
-      const data = await r.json();
-      allJobs.push(...(data.jobs || []).map(j => ({
-        title: j.title, company: j.company_name, url: j.url,
-        location: j.candidate_required_location,
-        description: j.description ? j.description.replace(/<[^>]+>/g,'') : "",
-        source: "Remotive"
-      })));
-    }
-    return allJobs;
-  } catch(e) { console.warn("Remotive failed:", e); return []; }
-}
-
-async function fetchJobicy() {
-  try {
-    const r = await fetch("https://jobicy.com/api/v2/remote-jobs?count=50&industry=management");
-    const data = await r.json();
-    return (data.jobs || []).map(j => ({
-      title: j.jobTitle, company: j.companyName, url: j.url,
-      location: j.jobGeo, description: (j.jobDescription||"").replace(/<[^>]+>/g,''),
-      source: "Jobicy"
-    }));
-  } catch(e) { console.warn("Jobicy failed:", e); return []; }
+async function clearFeed() {
+  if (!confirm("Clear all skipped & pending jobs from feed?")) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/job_feed?status=eq.pending`, { method: "DELETE", headers: HEADERS });
+  await fetch(`${SUPABASE_URL}/rest/v1/job_feed?status=eq.skipped`, { method: "DELETE", headers: HEADERS });
+  await loadFeed();
+  showStatus("✓ Feed cleared");
 }
 
 async function refreshFeed() {
@@ -718,11 +628,18 @@ async function refreshFeed() {
 
   let allJobs = [];
 
-  setProgress("Fetching from Remotive...");
-  allJobs.push(...await fetchRemotive());
+  setProgress("Fetching from Remotive (priority source)...");
+  const remotiveJobs = await fetchRemotive();
+  allJobs.push(...remotiveJobs);
+  console.log(`Remotive: ${remotiveJobs.length} raw jobs`);
 
   setProgress("Fetching from Jobicy...");
-  allJobs.push(...await fetchJobicy());
+  const jobicyJobs = await fetchJobicy();
+  allJobs.push(...jobicyJobs);
+  console.log(`Jobicy: ${jobicyJobs.length} raw jobs`);
+
+  // Note: 80k Hours, Climatebase, ImpactPool, EA Board do not have public APIs.
+  // Check these manually: jobs.80000hours.org | climatebase.org/jobs | impactpool.org | ea-internships.pory.app
 
   // Deduplicate
   const seen = new Set();
@@ -733,7 +650,7 @@ async function refreshFeed() {
 
   setProgress(`Filtering ${allJobs.length} jobs...`);
 
-  // Filter by relevance
+  // Filter by relevance + geo
   const relevant = allJobs.filter(isRelevant);
   setProgress(`Analyzing ${relevant.length} relevant jobs...`);
 
@@ -741,10 +658,13 @@ async function refreshFeed() {
   for (const job of relevant) {
     const a = analyzeJob(job);
     if (a.hardNo) continue;
+    if (a.asiaOnly) continue; // skip APAC-only
+    // Skip non-remote if location is outside allowed regions
+    if (a.remote === "No" && !a.geoOk) continue;
     await feedInsert({
       title: job.title, company: job.company, url: job.url,
       source: job.source, location: job.location,
-      description: (job.description||"").slice(0, 800),
+      description: (job.description||"").slice(0, 1200),
       org_type: a.orgType, engagement_type: a.engagement,
       remote: a.remote, us_can_auth_required: a.usCanAuth,
       relocation_required: "Unclear",
@@ -754,7 +674,9 @@ async function refreshFeed() {
       hard_no: a.hardNo,
       status: "pending",
       score_overall: null,
-      score_mission: null, score_role: null, score_seniority: null, score_impact: null,
+      score_mission: null, score_role: null,
+      score_seniority: a.seniority || null,
+      score_impact: null,
     });
     saved++;
   }
@@ -803,10 +725,7 @@ function renderFeed() {
 
   grid.innerHTML = feedJobs.map(job => {
     const mission = job.fit_summary || "—";
-    const seniority = job.description ? (() => {
-      const m = job.description.match(/(\d+)\+?\s*(?:to\s*\d+\s*)?years?\s*(?:of\s*)?(?:experience|exp)/i);
-      return m ? m[1]+"+ yrs exp" : null;
-    })() : null;
+    const seniority = job.score_seniority || null;
     const comp = job.description ? (() => {
       const m = job.description.match(/\$[\d,]+(?:k)?(?:\s*[-–]\s*\$?[\d,]+(?:k)?)?/i);
       return m ? m[0] : null;
