@@ -757,15 +757,17 @@ async function refreshFeed() {
 
   // Filter by relevance + geo
   const relevant = allJobs.filter(isRelevant);
+  console.log(`After isRelevant filter: ${relevant.length} / ${allJobs.length} jobs`);
   setProgress(`Analyzing ${relevant.length} relevant jobs...`);
 
   let saved = 0;
+  let skippedHardNo = 0, skippedAsia = 0, skippedGeo = 0;
   for (const job of relevant) {
     const a = analyzeJob(job);
-    if (a.hardNo) continue;
-    if (a.asiaOnly) continue; // skip APAC-only
+    if (a.hardNo) { skippedHardNo++; continue; }
+    if (a.asiaOnly) { skippedAsia++; continue; }
     // Skip non-remote if location is outside allowed regions
-    if (a.remote === "No" && !a.geoOk) continue;
+    if (a.remote === "No" && !a.geoOk) { skippedGeo++; continue; }
     await feedInsert({
       title: job.title, company: job.company, url: job.url,
       source: job.source, location: job.location,
@@ -786,6 +788,7 @@ async function refreshFeed() {
     saved++;
   }
 
+  console.log(`Feed results: ${saved} saved, ${skippedHardNo} hardNo, ${skippedAsia} asia, ${skippedGeo} geo-blocked`);
   hideProgress();
   btn.disabled = false;
   btn.textContent = "⟳ Refresh Feed";
