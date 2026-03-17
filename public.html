@@ -448,6 +448,15 @@ function render(jobs) {
     .map(([s, cfg]) => `<div class="legend-item"><div class="legend-dot" style="background:${cfg.color}"></div>${cfg.label} (${counts[s]})</div>`)
     .join("");
 
+  // Sort by priority: High → Medium → Low
+  const PRIORITY_ORDER = { "high":0, "medium":1, "low":2 };
+  function sortByPriority(arr) {
+    return [...arr].sort((a,b) =>
+      (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()] ?? 1) -
+      (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()] ?? 1)
+    );
+  }
+
   // Build card HTML
   function buildCard(job, cfg, compact) {
     const why = job.notes ? job.notes.split(/[.!?]/)[0].trim() : null;
@@ -473,7 +482,7 @@ function render(jobs) {
 
   const kanbanCols = mainStatuses.map(statusKey => {
     const cfg = STATUS_CONFIG[statusKey];
-    const group = jobs.filter(j => normalizeStatus(j.status) === statusKey);
+    const group = sortByPriority(jobs.filter(j => normalizeStatus(j.status) === statusKey));
     return `<div class="kanban-col">
       <div class="status-header">
         <span class="status-pill" style="background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}">${cfg.label}</span>
@@ -487,7 +496,7 @@ function render(jobs) {
 
   const bottomCols = bottomStatuses.map(statusKey => {
     const cfg = STATUS_CONFIG[statusKey];
-    const group = jobs.filter(j => normalizeStatus(j.status) === statusKey);
+    const group = sortByPriority(jobs.filter(j => normalizeStatus(j.status) === statusKey));
     if (!group.length) return "";
     return `<div class="bottom-col">
       <div class="bottom-label">${cfg.label} (${group.length})</div>
