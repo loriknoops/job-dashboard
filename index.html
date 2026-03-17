@@ -581,32 +581,8 @@ function isRelevant(job) {
   ];
   if (excludePatterns.some(t => title.includes(t))) return false;
 
-  // ── MUST have at least one mission signal in full text ──
-  // Role + company must relate to something Lorinde cares about
-  const missionSignals = [
-    // Climate & environment
-    "climate","clean energy","renewable","sustainability","net zero","carbon","emissions","environment","nature","green","cleantech","energy transition","circular",
-    // Global development & humanitarian
-    "global development","international development","developing countr","lmic","emerging market","humanitarian","poverty","aid ","oda ","undp","unicef","oxfam","ngo","non-profit","nonprofit","social enterprise","civil society",
-    // Health
-    "global health","public health","healthcare access","health equity","malaria","hiv","tuberculosis","maternal","chai","health system",
-    // AI safety & responsible tech
-    "ai safety","alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai","beneficial ai",
-    // Impact investing & financial inclusion
-    "impact invest","blended finance","social finance","microfinance","financial inclusion","impact capital","catalytic finance","development finance",
-    // Policy & governance
-    "public policy","social policy","policy reform","governance","democracy","rule of law","social protection",
-    // Education & social mobility
-    "education access","edtech","learning outcomes","literacy","social mobility","youth development",
-    // Housing & urban
-    "affordable housing","housing access","urban development","techo","habitat for humanity",
-    // Mission-driven org signals
-    "mission-driven","mission driven","social impact","positive impact","public good","social good","purpose-driven","b corp","benefit corporation","501c","charity","foundation grant",
-    // International orgs
-    "world bank","imf ","usaid","dfid","fcdo","giz ","idb ","ifc ","asian development","african development","inter-american",
-  ];
-  if (!missionSignals.some(s => text.includes(s))) return false;
-
+  // Mission signal is informational only (used for tagging) - not a hard gate
+  // We trust role + company blocklist to filter quality
   return true;
 }
 
