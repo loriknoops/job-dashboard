@@ -739,9 +739,6 @@ async function refreshFeed() {
   setProgress("Fetching from We Work Remotely...");
   allJobs.push(...await fetchWeWorkRemotely());
 
-  setProgress("Fetching from Himalayas...");
-  allJobs.push(...await fetchHimalayas());
-
   console.log(`Total raw jobs before dedup: ${allJobs.length}`);
   // Manual boards (no API) - check weekly:
   // jobs.80000hours.org | climatebase.org/jobs | impactpool.org | ea-internships.pory.app | idealist.org | workonclimate.org | apolitical.co
@@ -777,13 +774,9 @@ async function refreshFeed() {
       relocation_required: "Unclear",
       comp_visible: a.comp ? "yes" : "no",
       deadline: a.deadline,
-      fit_summary: a.mission,
+      fit_summary: a.mission + (a.seniority ? " · " + a.seniority : "") + (a.comp ? " · " + a.comp : ""),
       hard_no: a.hardNo,
       status: "pending",
-      score_overall: null,
-      score_mission: null, score_role: null,
-      score_seniority: a.seniority || null,
-      score_impact: null,
     });
     saved++;
   }
