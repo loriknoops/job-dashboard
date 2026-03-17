@@ -924,6 +924,201 @@ document.addEventListener("click", function(e) {
 });
 
 load();
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='pipeline')||(i===1&&tab==='feed')));
+  document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
+  document.getElementById('tab-feed').classList.toggle('active', tab==='feed');
+  if (tab === 'feed') loadFeed();
+}
+
+// ── PIPELINE LOGIC ──
+function stars(n, color) {
+  const filled = Math.min(Math.max(parseInt(n)||0, 0), 5);
+  return `<span class="stars" style="color:${color}">${"★".repeat(filled)}${"☆".repeat(5-filled)}</span>`;
+}
+function normalizeStatus(s) {
+  if (!s) return "Researching";
+  const map = { "researching":"Researching","applied":"Applied","interviewing":"Interviewing","offer":"Offer","rejected":"Rejected","on hold":"On Hold" };
+  return map[s.toLowerCase()] || s;
+}
+function normalizePriority(p) {
+  if (!p) return "Medium";
+  const map = { "high":"High","medium":"Medium","low":"Low" };
+  return map[p.toLowerCase()] || p;
+}
+function showStatus(msg, isErr) {
+  const m = document.getElementById("meta");
+  const base = metaText();
+  m.innerHTML = base + `<span class="${isErr?'save-err':'save-ok'}">${msg}</span>`;
+  setTimeout(() => m.innerHTML = base, 2500);
+}
+async function load() {
+  try { jobs = await dbGet(); render(); }
+  catch(e) { document.getElementById("kanban-view").innerHTML = `<div class="loading" style="color:#f87171">Failed to connect.</div>`; }
+}
+function metaText() {
+  const interviewing = jobs.filter(j => (j.status||"").toLowerCase() === "interviewing").length;
+  const urg = urgentJobs().length;
+  return `${jobs.length} roles · ${interviewing} interviewing · ${urg} urgent`;
+}
+function urgentJobs() {
+  return jobs.filter(j => {
+    if (!j.deadline) return false;
+    const days = Math.ceil((new Date(j.deadline) - new Date()) / 86400000);
+    return days >= 0 && days <= 7;
+  });
+}
+function render() {
+  document.getElementById("meta").innerHTML = metaText();
+  renderUrgent();
+  const normalized = jobs.map(j => ({ ...j, status: normalizeStatus(j.status), priority: normalizePriority(j.priority) }));
+  const filtered = currentFilter === "All" ? normalized : normalized.filter(j => j.priority === currentFilter);
+  document.getElementById("filter-count").textContent = filtered.length + " roles shown";
+  if (currentView === "kanban") renderKanban(filtered);
+  else renderTable(filtered);
+}
+function renderUrgent() {
+  const urg = urgentJobs();
+  const bar = document.getElementById("urgent-bar");
+  if (!urg.length) { bar.classList.add("hidden"); return; }
+  bar.classList.remove("hidden");
+  bar.innerHTML = '<span class="urgent-label">⚡ DEADLINE SOON</span>' +
+    urg.map(j => {
+      const days = Math.ceil((new Date(j.deadline) - new Date()) / 86400000);
+      return `<span class="urgent-tag" data-id="${j.id}">${j.company} — ${days===0?"TODAY":days+"d"}</span>`;
+    }).join("");
+}
+const STATUS_COLORS = {
+  "Researching": { bg:"#F0F4FF", text:"#4361EE", border:"#C5D0FF" },
+  "Applied":     { bg:"#FFF8E7", text:"#D4840A", border:"#FFD97A" },
+  "Interviewing":{ bg:"#E8F5E9", text:"#2E7D32", border:"#A5D6A7" },
+  "Offer":       { bg:"#F3E5F5", text:"#7B1FA2", border:"#CE93D8" },
+  "Rejected":    { bg:"#FFEBEE", text:"#C62828", border:"#EF9A9A" },
+  "On Hold":     { bg:"#F5F5F5", text:"#616161", border:"#BDBDBD" },
+};
+const PRIORITY_COLORS = { "High":{ bg:"#FEE2E2", text:"#DC2626" }, "Medium":{ bg:"#FEF3C7", text:"#D97706" }, "Low":{ bg:"#F0FDF4", text:"#16A34A" } };
+const PRIORITY_ORDER = { "high":0, "medium":1, "low":2 };
+const STATUSES = ["Researching","Applied","Interviewing","Offer","Rejected","On Hold"];
+function renderKanban(filtered) {
+  const kv = document.getElementById("kanban-view");
+  kv.classList.remove("hidden");
+  document.getElementById("table-view").classList.add("hidden");
+  const statuses = STATUSES.filter(s => !["Rejected","On Hold"].includes(s) || filtered.some(j=>j.status===s));
+  kv.innerHTML = statuses.map(status => {
+    const c = STATUS_COLORS[status];
+    const cols = filtered.filter(j => j.status === status).sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
+    return `<div class="column"><div class="col-header"><span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${status.toUpperCase()}</span><span class="col-count">${cols.length}</span></div>${cols.map(job => {
+      const pc = PRIORITY_COLORS[job.priority]||{bg:"#FEF3C7",text:"#D97706"};
+      const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "";
+      return `<div class="card" data-id="${job.id}"><div class="card-top"><div><div class="card-company">${job.company||""}</div><div class="card-role">${job.role||""}</div></div><span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${job.priority||""}</span></div>${job.next_action?`<div class="next-action-strip">→ ${job.next_action}</div>`:""}<div class="card-bottom"><span style="font-size:10px;color:#555;font-family:monospace">${dl}</span></div></div>`;
+    }).join("")}</div>`;
+  }).join("");
+}
+function renderTable(filtered) {
+  document.getElementById("kanban-view").classList.add("hidden");
+  const tv = document.getElementById("table-view");
+  tv.classList.remove("hidden");
+  const sorted = [...filtered].sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
+  tv.innerHTML = `<table><thead><tr>${["Company","Role","Status","Priority","Fit","Interest","Salary","Deadline","Next Action","Source"].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${sorted.map(job => {
+    const c = STATUS_COLORS[job.status]||{};
+    const pc = PRIORITY_COLORS[job.priority]||{};
+    const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "—";
+    return `<tr class="data-row" data-id="${job.id}"><td style="font-weight:600;white-space:nowrap">${job.company||""}</td><td style="color:#888;font-size:12px">${job.role||""}</td><td><span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};padding:2px 9px;border-radius:20px;font-family:monospace;font-size:10px">${job.status||""}</span></td><td><span class="priority-badge" style="background:${pc.bg};color:${pc.text};font-size:10px;padding:2px 7px">${job.priority||""}</span></td><td>${stars(job.fit,"#F0D080")}</td><td>${stars(job.interest,"#A78BFA")}</td><td style="color:#666;font-size:12px;white-space:nowrap">${job.salary||"—"}</td><td style="color:#555;font-family:monospace;font-size:11px;white-space:nowrap">${dl}</td><td style="color:#C9A84C;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${job.next_action||"—"}</td><td style="color:#777;font-size:12px">${job.source||"—"}</td></tr>`;
+  }).join("")}</tbody></table>`;
+}
+function openDetail(id) {
+  const job = jobs.find(j => String(j.id) === String(id));
+  if (!job) return;
+  const status = normalizeStatus(job.status);
+  const priority = normalizePriority(job.priority);
+  document.getElementById("d-company").textContent = job.company||"";
+  document.getElementById("d-role").textContent = job.role||"";
+  const linkEl = document.getElementById("d-link");
+  if (job.link) { linkEl.href = job.link; linkEl.textContent = "→ View Job Description"; linkEl.classList.remove("hidden"); }
+  else linkEl.classList.add("hidden");
+  document.getElementById("d-status-btns").innerHTML = STATUSES.map(s => {
+    const sc = STATUS_COLORS[s]; const active = status === s;
+    return `<button class="status-btn" style="border:1px solid ${sc.border};background:${active?sc.bg:"transparent"};color:${active?sc.text:"#555"}" onclick="changeStatus('${id}','${s}')">${s}</button>`;
+  }).join("");
+  const pc = PRIORITY_COLORS[priority]||{};
+  document.getElementById("d-info-grid").innerHTML = [
+    ["Priority",`<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${priority}</span>`],
+    ["Salary",job.salary||"—"],["Deadline",job.deadline?new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"—"],
+    ["Source",job.source||"—"],["Fit ⚡",stars(job.fit,"#F0D080")],["Interest ♥",stars(job.interest,"#A78BFA")],
+  ].map(([l,v])=>`<div class="info-cell"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join("");
+  const naBlock = document.getElementById("d-next-action-block");
+  if (job.next_action) { naBlock.classList.remove("hidden"); document.getElementById("d-next-action").textContent = job.next_action; }
+  else naBlock.classList.add("hidden");
+  const notesBlock = document.getElementById("d-notes-block");
+  if (job.notes) { notesBlock.classList.remove("hidden"); document.getElementById("d-notes").textContent = job.notes; }
+  else notesBlock.classList.add("hidden");
+  document.getElementById("d-edit-btn").onclick = () => { closeDetailModal(); openForm(id); };
+  document.getElementById("d-delete-btn").onclick = () => { if(confirm("Delete this role?")) { deleteJob(id); closeDetailModal(); } };
+  document.getElementById("detail-overlay").classList.remove("hidden");
+}
+function closeDetailModal() { document.getElementById("detail-overlay").classList.add("hidden"); }
+function closeFormModal() { document.getElementById("form-overlay").classList.add("hidden"); }
+async function changeStatus(id, status) {
+  await dbUpdate(id, { status: status.toLowerCase() });
+  jobs = await dbGet(); render(); openDetail(id); showStatus("✓ updated");
+}
+async function deleteJob(id) {
+  await dbDelete(id); jobs = await dbGet(); render(); showStatus("✓ deleted");
+}
+function openForm(id) {
+  editingId = id;
+  const job = id ? jobs.find(j => String(j.id) === String(id)) : null;
+  document.getElementById("form-title").textContent = id ? "Edit Role" : "Add New Role";
+  document.getElementById("f-company").value    = job?.company    || "";
+  document.getElementById("f-role").value       = job?.role       || "";
+  document.getElementById("f-status").value     = (job?.status    || "researching").toLowerCase();
+  document.getElementById("f-priority").value   = (job?.priority  || "medium").toLowerCase();
+  document.getElementById("f-salary").value     = job?.salary     || "";
+  document.getElementById("f-deadline").value   = job?.deadline   || "";
+  document.getElementById("f-source").value     = job?.source     || "";
+  document.getElementById("f-fit").value        = job?.fit        || 3;
+  document.getElementById("f-interest").value   = job?.interest   || 3;
+  document.getElementById("f-link").value       = job?.link       || "";
+  document.getElementById("f-next-action").value = job?.next_action || "";
+  document.getElementById("f-notes").value      = job?.notes      || "";
+  document.getElementById("form-overlay").classList.remove("hidden");
+}
+async function saveForm() {
+  const payload = {
+    company: document.getElementById("f-company").value.trim(), role: document.getElementById("f-role").value.trim(),
+    status: document.getElementById("f-status").value, priority: document.getElementById("f-priority").value,
+    salary: document.getElementById("f-salary").value.trim(), deadline: document.getElementById("f-deadline").value || null,
+    source: document.getElementById("f-source").value.trim(), fit: parseInt(document.getElementById("f-fit").value) || null,
+    interest: parseInt(document.getElementById("f-interest").value) || null,
+    link: document.getElementById("f-link").value.trim() || null,
+    next_action: document.getElementById("f-next-action").value.trim(), notes: document.getElementById("f-notes").value.trim(),
+  };
+  closeFormModal();
+  if (editingId) { await dbUpdate(editingId, payload); showStatus("✓ saved"); }
+  else { await dbInsert(payload); showStatus("✓ added"); }
+  jobs = await dbGet(); render();
+}
+function setView(v) {
+  currentView = v;
+  document.getElementById("btn-kanban").classList.toggle("active", v==="kanban");
+  document.getElementById("btn-table").classList.toggle("active", v==="table");
+  render();
+}
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+function setProgress(msg) {
+  const bar = document.getElementById("progress-bar");
+  bar.classList.add("visible");
+  bar.textContent = msg;
+}
+function hideProgress() { document.getElementById("progress-bar").classList.remove("visible"); }
+
+
 </script>
 </body>
 </html>
