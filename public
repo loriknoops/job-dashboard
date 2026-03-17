@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lorinde Knoops — Job Search</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --gold-dim: rgba(201,168,76,0.15);
+    --bg: #0F0C29;
+    --bg2: #1a1a2e;
+    --bg3: #16213e;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --text: #E8E8E8;
+    --muted: #666;
+    --dim: #444;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 40px 48px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+
+  .header-left .tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .stat {
+    text-align: right;
+  }
+
+  .stat-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--border);
+  }
+
+  .last-updated {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  /* ── PIPELINE VISUAL ── */
+  .pipeline-section {
+    padding: 28px 48px 0;
+  }
+
+  .pipeline-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .pipeline-track {
+    display: flex;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 6px;
+    margin-bottom: 8px;
+  }
+
+  .pipeline-segment {
+    height: 100%;
+    transition: flex 0.4s ease;
+  }
+
+  .pipeline-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    padding: 28px 48px 48px;
+  }
+
+  /* ── STATUS SECTIONS ── */
+  .status-section {
+    margin-bottom: 32px;
+  }
+
+  .status-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .status-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .status-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  /* ── CARDS ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+
+  .job-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .job-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .job-card:hover {
+    background: rgba(255,255,255,0.07);
+    transform: translateY(-1px);
+  }
+
+  .card-sector {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .card-company {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .card-role {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .card-priority {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .card-deadline {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .card-why {
+    font-size: 12px;
+    color: #999;
+    line-height: 1.6;
+    font-style: italic;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  .footer a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 80px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  @media(max-width: 600px) {
+    .header { padding: 24px 20px 20px; }
+    .pipeline-section { padding: 20px 20px 0; }
+    .main { padding: 20px 20px 40px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Lorinde Knoops</h1>
+    <div class="tagline">Strategy & Implementation · Mission-Driven · Remote from Patagonia</div>
+  </div>
+  <div class="header-right">
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-number" id="stat-total">—</div>
+        <div class="stat-label">Roles tracked</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-number" id="stat-active">—</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-number" id="stat-interviewing">—</div>
+        <div class="stat-label">Interviewing</div>
+      </div>
+    </div>
+    <div class="last-updated" id="last-updated">Loading...</div>
+  </div>
+</div>
+
+<div class="pipeline-section">
+  <div class="pipeline-label">Pipeline overview</div>
+  <div class="pipeline-track" id="pipeline-track"></div>
+  <div class="pipeline-legend" id="pipeline-legend"></div>
+</div>
+
+<div class="main" id="main">
+  <div class="loading">Loading pipeline...</div>
+</div>
+
+<div class="footer">
+  Live pipeline · <a href="https://www.linkedin.com/in/lorindeknoops" target="_blank">LinkedIn</a>
+</div>
+
+<script>
+const SUPABASE_URL = "https://zxttsqbrooiuoouexlrk.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dHRzcWJyb29pdW9vdWV4bHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1OTQ2ODQsImV4cCI6MjA4OTE3MDY4NH0.HZo-l_iBeh7rF7wAJtDfGNlRlyj3apy_VOA954Av2WA";
+const HEADERS = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
+
+// Status config — public-facing labels & colors
+const STATUS_CONFIG = {
+  "researching": { label: "Researching",   color: "#4361EE", bg: "rgba(67,97,238,0.15)",  border: "rgba(67,97,238,0.3)",  order: 0 },
+  "applied":     { label: "Applied",       color: "#D4840A", bg: "rgba(212,132,10,0.15)", border: "rgba(212,132,10,0.3)", order: 1 },
+  "interviewing":{ label: "Interviewing",  color: "#2E7D32", bg: "rgba(46,125,50,0.15)",  border: "rgba(46,125,50,0.3)",  order: 2 },
+  "offer":       { label: "Offer",         color: "#7B1FA2", bg: "rgba(123,31,162,0.15)", border: "rgba(123,31,162,0.3)", order: 3 },
+  "rejected":    { label: "Rejected",      color: "#888",    bg: "rgba(136,136,136,0.1)", border: "rgba(136,136,136,0.2)",order: 4 },
+  "on hold":     { label: "On Hold",       color: "#555",    bg: "rgba(85,85,85,0.1)",    border: "rgba(85,85,85,0.2)",   order: 5 },
+};
+
+function normalizeStatus(s) {
+  return (s||"researching").toLowerCase().trim();
+}
+
+async function load() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/jobs?select=*&order=created_at.asc`, { headers: HEADERS });
+    const jobs = await r.json();
+    render(jobs);
+  } catch(e) {
+    document.getElementById("main").innerHTML = `<div class="loading" style="color:#f87171">Could not load data.</div>`;
+  }
+}
+
+function render(jobs) {
+  // Stats
+  const activeStatuses = ["researching","applied","interviewing","offer"];
+  const active = jobs.filter(j => activeStatuses.includes(normalizeStatus(j.status)));
+  const interviewing = jobs.filter(j => normalizeStatus(j.status) === "interviewing");
+
+  document.getElementById("stat-total").textContent = jobs.length;
+  document.getElementById("stat-active").textContent = active.length;
+  document.getElementById("stat-interviewing").textContent = interviewing.length;
+  document.getElementById("last-updated").textContent = "Updated " + new Date().toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
+
+  // Pipeline bar
+  const counts = {};
+  jobs.forEach(j => {
+    const s = normalizeStatus(j.status);
+    counts[s] = (counts[s]||0) + 1;
+  });
+  const total = jobs.length || 1;
+  const track = document.getElementById("pipeline-track");
+  const legend = document.getElementById("pipeline-legend");
+  const orderedStatuses = Object.entries(STATUS_CONFIG).sort((a,b) => a[1].order - b[1].order);
+
+  track.innerHTML = orderedStatuses
+    .filter(([s]) => counts[s])
+    .map(([s, cfg]) => `<div class="pipeline-segment" style="flex:${counts[s]/total};background:${cfg.color};opacity:0.8"></div>`)
+    .join("");
+
+  legend.innerHTML = orderedStatuses
+    .filter(([s]) => counts[s])
+    .map(([s, cfg]) => `<div class="legend-item"><div class="legend-dot" style="background:${cfg.color}"></div>${cfg.label} (${counts[s]})</div>`)
+    .join("");
+
+  // Group by status
+  const main = document.getElementById("main");
+  const sections = orderedStatuses
+    .map(([statusKey, cfg]) => {
+      const group = jobs.filter(j => normalizeStatus(j.status) === statusKey);
+      if (!group.length) return "";
+
+      const cards = group.map(job => {
+        // Extract a "why" note - use notes field, trim to first sentence
+        const why = job.notes
+          ? job.notes.split(/[.!?]/)[0].trim()
+          : null;
+
+        const dl = job.deadline
+          ? new Date(job.deadline).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })
+          : null;
+        const priority = job.priority ? job.priority.charAt(0).toUpperCase() + job.priority.slice(1).toLowerCase() : null;
+        const priorityColors = { "High":"#DC2626", "Medium":"#D97706", "Low":"#16A34A" };
+        const pColor = priorityColors[priority] || "#888";
+
+        return `<div class="job-card" style="border-top-color:${cfg.color}">
+          <div class="card-sector">${job.source || ""}</div>
+          <div class="card-company">${job.company || ""}</div>
+          <div class="card-role">${job.role || ""}</div>
+          <div class="card-meta">
+            ${priority ? `<span class="card-priority" style="color:${pColor};border-color:${pColor}40;background:${pColor}15">${priority}</span>` : ""}
+            ${dl ? `<span class="card-deadline">📅 ${dl}</span>` : ""}
+          </div>
+          ${why ? `<div class="card-why">${why}</div>` : ""}
+        </div>`;
+      }).join("");
+
+      return `<div class="status-section">
+        <div class="status-header">
+          <span class="status-pill" style="background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}">${cfg.label}</span>
+          <span class="status-count">${group.length} role${group.length>1?"s":""}</span>
+        </div>
+        <div class="cards-grid">${cards}</div>
+      </div>`;
+    }).join("");
+
+  main.innerHTML = sections || `<div class="loading">No roles yet.</div>`;
+}
+
+load();
+</script>
+</body>
+</html>
