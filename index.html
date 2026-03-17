@@ -17,6 +17,14 @@
   .save-ok { color: #4ade80; margin-left: 10px; }
   .save-err { color: #f87171; margin-left: 10px; }
 
+  /* TAB NAV */
+  .tab-nav { display: flex; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 28px; gap: 0; }
+  .tab-btn { padding: 12px 20px; border: none; background: transparent; color: #555; font-family: monospace; font-size: 12px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab-btn.active { color: #C9A84C; border-bottom-color: #C9A84C; }
+  .tab-btn:hover:not(.active) { color: #999; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
   .view-toggle { display: flex; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 3px; border: 1px solid rgba(255,255,255,0.1); }
   .view-btn { padding: 5px 12px; border-radius: 6px; border: none; font-size: 12px; font-family: monospace; background: transparent; color: #666; transition: all 0.2s; }
   .view-btn.active { background: rgba(201,168,76,0.3); color: #C9A84C; }
@@ -92,6 +100,64 @@
   .hidden { display: none; }
   .loading { text-align: center; padding: 60px; color: #555; font-family: monospace; font-size: 13px; }
   .stars { font-family: monospace; }
+
+  /* ── FEED TAB ── */
+  .feed-header { padding: 20px 28px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .feed-title { font-size: 14px; color: #E8E8E8; font-family: monospace; }
+  .feed-meta { font-size: 11px; color: #444; font-family: monospace; }
+  .feed-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .refresh-btn { padding: 8px 18px; background: rgba(90,180,120,0.15); border: 1px solid rgba(90,180,120,0.3); border-radius: 8px; font-size: 12px; font-family: monospace; color: #5AB478; transition: all 0.2s; }
+  .refresh-btn:hover { background: rgba(90,180,120,0.25); }
+  .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .feed-filters { padding: 12px 28px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .feed-filter-btn { padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 10px; font-family: monospace; background: transparent; color: #555; cursor: pointer; }
+  .feed-filter-btn.active { background: rgba(90,180,120,0.15); color: #5AB478; border-color: rgba(90,180,120,0.3); }
+
+  .feed-grid { padding: 16px 28px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+
+  .feed-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; transition: background 0.15s; }
+  .feed-card:hover { background: rgba(255,255,255,0.06); }
+
+  .feed-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .feed-card-company { font-size: 14px; font-weight: 700; color: #E8E8E8; }
+  .feed-card-role { font-size: 11px; color: #777; margin-top: 2px; line-height: 1.4; }
+  .feed-overall-score { font-family: monospace; font-size: 20px; font-weight: 700; color: #F0D080; white-space: nowrap; line-height: 1; }
+  .feed-overall-label { font-size: 8px; color: #444; font-family: monospace; text-align: right; margin-top: 2px; }
+
+  .feed-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .feed-tag { font-family: monospace; font-size: 9px; padding: 2px 7px; border-radius: 4px; }
+  .tag-org { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+  .tag-engagement { background: rgba(255,255,255,0.06); color: #666; border: 1px solid rgba(255,255,255,0.08); }
+  .tag-source { background: rgba(201,168,76,0.1); color: #C9A84C; border: 1px solid rgba(201,168,76,0.2); }
+  .tag-hardno { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.2); }
+
+  .feed-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .score-row { display: flex; justify-content: space-between; align-items: center; }
+  .score-label { font-family: monospace; font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+  .score-bar-wrap { flex: 1; margin: 0 8px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+  .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .score-val { font-family: monospace; font-size: 10px; color: #E8E8E8; min-width: 16px; text-align: right; }
+
+  .feed-flags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .flag-item { font-family: monospace; font-size: 9px; padding: 2px 7px; border-radius: 4px; }
+  .flag-yes { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+  .flag-no { background: rgba(220,38,38,0.1); color: #f87171; border: 1px solid rgba(220,38,38,0.2); }
+  .flag-unclear { background: rgba(255,255,255,0.05); color: #666; border: 1px solid rgba(255,255,255,0.08); }
+
+  .feed-summary { font-size: 11px; color: #888; line-height: 1.6; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+
+  .feed-actions { display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+  .feed-btn-promote { flex: 2; padding: 7px; background: rgba(90,180,120,0.15); border: 1px solid rgba(90,180,120,0.3); border-radius: 7px; font-size: 11px; font-family: monospace; color: #5AB478; }
+  .feed-btn-promote:hover { background: rgba(90,180,120,0.25); }
+  .feed-btn-skip { flex: 1; padding: 7px; background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; font-size: 11px; font-family: monospace; color: #444; }
+  .feed-btn-skip:hover { color: #666; border-color: rgba(255,255,255,0.15); }
+  .feed-btn-link { flex: 1; padding: 7px; background: transparent; border: 1px solid rgba(201,168,76,0.2); border-radius: 7px; font-size: 11px; font-family: monospace; color: #C9A84C; text-decoration: none; text-align: center; }
+  .feed-btn-link:hover { background: rgba(201,168,76,0.08); }
+
+  .progress-bar { background: rgba(90,180,120,0.08); border: 1px solid rgba(90,180,120,0.15); border-radius: 8px; padding: 12px 16px; margin: 16px 28px 0; font-family: monospace; font-size: 11px; color: #5AB478; display: none; }
+  .progress-bar.visible { display: block; }
 </style>
 </head>
 <body>
@@ -110,18 +176,53 @@
   </div>
 </div>
 
-<div id="urgent-bar" class="urgent-bar hidden"></div>
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('pipeline')">⬡ Pipeline</button>
+  <button class="tab-btn" onclick="switchTab('feed')">⚡ Job Feed <span id="feed-badge" style="display:none;background:rgba(90,180,120,0.2);color:#5AB478;border-radius:10px;padding:1px 6px;font-size:9px;margin-left:4px;"></span></button>
+</div>
 
-<div class="main">
-  <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
-    <button class="filter-btn" onclick="setFilter('High',this)">High</button>
-    <button class="filter-btn" onclick="setFilter('Medium',this)">Medium</button>
-    <button class="filter-btn" onclick="setFilter('Low',this)">Low</button>
-    <span class="filter-count" id="filter-count"></span>
+<!-- PIPELINE TAB -->
+<div class="tab-content active" id="tab-pipeline">
+  <div id="urgent-bar" class="urgent-bar hidden"></div>
+  <div class="main">
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('High',this)">High</button>
+      <button class="filter-btn" onclick="setFilter('Medium',this)">Medium</button>
+      <button class="filter-btn" onclick="setFilter('Low',this)">Low</button>
+      <span class="filter-count" id="filter-count"></span>
+    </div>
+    <div id="kanban-view" class="kanban"><div class="loading">Connecting to database...</div></div>
+    <div id="table-view" class="hidden" style="overflow-x:auto;"></div>
   </div>
-  <div id="kanban-view" class="kanban"><div class="loading">Connecting to database...</div></div>
-  <div id="table-view" class="hidden" style="overflow-x:auto;"></div>
+</div>
+
+<!-- FEED TAB -->
+<div class="tab-content" id="tab-feed">
+  <div class="feed-header">
+    <div>
+      <div class="feed-title">Job Feed</div>
+      <div class="feed-meta" id="feed-meta">Fetches jobs from Remotive, Wellfound, Idealist + Claude web search across 10+ mission boards</div>
+    </div>
+    <div class="feed-controls">
+      <button class="refresh-btn" id="refresh-btn" onclick="refreshFeed()">⟳ Refresh Feed</button>
+    </div>
+  </div>
+
+  <div class="progress-bar" id="progress-bar">Initializing...</div>
+
+  <div class="feed-filters">
+    <button class="feed-filter-btn active" onclick="setFeedFilter('pending',this)">Pending</button>
+    <button class="feed-filter-btn" onclick="setFeedFilter('promoted',this)">Promoted</button>
+    <button class="feed-filter-btn" onclick="setFeedFilter('skipped',this)">Skipped</button>
+    <button class="feed-filter-btn" onclick="setFeedFilter('all',this)">All</button>
+    <span style="margin-left:auto;font-size:10px;color:#444;font-family:monospace;" id="feed-count"></span>
+  </div>
+
+  <div class="feed-grid" id="feed-grid">
+    <div class="loading">Click "Refresh Feed" to fetch and score new jobs.</div>
+  </div>
 </div>
 
 <!-- Detail Modal -->
@@ -204,14 +305,14 @@ const SUPABASE_URL = "https://zxttsqbrooiuoouexlrk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dHRzcWJyb29pdW9vdWV4bHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1OTQ2ODQsImV4cCI6MjA4OTE3MDY4NH0.HZo-l_iBeh7rF7wAJtDfGNlRlyj3apy_VOA954Av2WA";
 const HEADERS = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
 
+// ── SUPABASE ──
 async function dbGet() {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/jobs?select=*&order=created_at.asc`, { headers: HEADERS });
   return r.json();
 }
 async function dbInsert(job) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/jobs`, { method: "POST", headers: { ...HEADERS, "Prefer": "return=representation" }, body: JSON.stringify(job) });
-  const d = await r.json();
-  return d[0];
+  const d = await r.json(); return d[0];
 }
 async function dbUpdate(id, patch) {
   await fetch(`${SUPABASE_URL}/rest/v1/jobs?id=eq.${id}`, { method: "PATCH", headers: HEADERS, body: JSON.stringify(patch) });
@@ -219,7 +320,21 @@ async function dbUpdate(id, patch) {
 async function dbDelete(id) {
   await fetch(`${SUPABASE_URL}/rest/v1/jobs?id=eq.${id}`, { method: "DELETE", headers: HEADERS });
 }
+async function feedGet(status) {
+  const filter = status && status !== 'all' ? `&status=eq.${status}` : '';
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/job_feed?select=*&order=fetched_at.desc${filter}`, { headers: HEADERS });
+  return r.json();
+}
+async function feedInsert(job) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/job_feed`, { method: "POST", headers: { ...HEADERS, "Prefer": "return=minimal" }, body: JSON.stringify(job) });
+  } catch(e) { console.warn("Insert failed:", e); }
+}
+async function feedUpdateStatus(id, status) {
+  await fetch(`${SUPABASE_URL}/rest/v1/job_feed?id=eq.${id}`, { method: "PATCH", headers: HEADERS, body: JSON.stringify({ status }) });
+}
 
+// ── STATUS / PRIORITY COLORS ──
 const STATUS_COLORS = {
   "Researching": { bg:"#F0F4FF", text:"#4361EE", border:"#C5D0FF" },
   "Applied":     { bg:"#FFF8E7", text:"#D4840A", border:"#FFD97A" },
@@ -240,12 +355,123 @@ let jobs = [];
 let currentFilter = "All";
 let currentView = "kanban";
 let editingId = null;
+let feedFilter = "pending";
+let feedJobs = [];
 
+// ── JOB ANALYSIS (no API needed) ──
+function analyzeJob(job) {
+  const text = ((job.title || "") + " " + (job.description || "") + " " + (job.location || "")).toLowerCase();
+  const title = (job.title || "").toLowerCase();
+  const desc = (job.description || "").toLowerCase();
+
+  // Mission detection
+  const missionMap = [
+    { label: "Climate", terms: ["climate","clean energy","renewable","sustainability","net zero","carbon","emissions","green","environment","nature"] },
+    { label: "Global Dev", terms: ["global development","international development","developing countries","lmic","emerging markets","humanitarian","poverty","aid","oda"] },
+    { label: "Health", terms: ["health","medical","healthcare","public health","pandemic","disease","wellbeing","mental health","biotech","pharma"] },
+    { label: "AI Safety", terms: ["ai safety","alignment","responsible ai","ai governance","existential risk","longtermism","frontier ai"] },
+    { label: "Impact Investing", terms: ["impact invest","esg","blended finance","social finance","microfinance","financial inclusion","impact capital"] },
+    { label: "Education", terms: ["education","edtech","learning","university","school","skills","training"] },
+    { label: "Policy", terms: ["policy","government","public sector","regulation","advocacy","democracy","governance"] },
+    { label: "Housing", terms: ["housing","shelter","homelessness","urban","community development"] },
+    { label: "Food/Ag", terms: ["food","agriculture","food security","nutrition","alternative protein"] },
+    { label: "Tech for Good", terms: ["tech for good","civic tech","social tech","nonprofit tech","digital public"] },
+    { label: "Innovation", terms: ["innovation","startup","venture","accelerator","incubator"] },
+  ];
+  let mission = "General";
+  for (const m of missionMap) {
+    if (m.terms.some(t => text.includes(t))) { mission = m.label; break; }
+  }
+
+  // Seniority / years required
+  let seniority = null;
+  const yrMatch = desc.match(/(\d+)\+?\s*(?:to\s*\d+\s*)?years?\s*(?:of\s*)?(?:experience|exp)/i);
+  if (yrMatch) seniority = yrMatch[1] + "+ yrs";
+  else if (/senior|lead|director|head of|principal|vp |vice president|manager|chief/.test(title)) seniority = "Senior";
+  else if (/junior|entry|associate|assistant|coordinator/.test(title)) seniority = "Junior";
+  else if (/mid|analyst|specialist|officer/.test(title)) seniority = "Mid";
+
+  // Remote detection
+  let remote = "Unclear";
+  if (/remote/.test(text) && !/not remote|no remote|on.?site only/.test(text)) remote = "Yes";
+  else if (/on.?site|in.?office|in.?person|must be located|must reside|relocation/.test(text)) remote = "No";
+
+  // US/CAN work auth
+  let usCanAuth = "No";
+  if (/must be (?:authorized|eligible|permitted) to work in (?:the )?(?:us|u\.s|united states|canada)|us citizen|authorized to work in the united states|right to work in (?:the )?(?:us|canada)|work authorization|visa sponsorship (not|won't|cannot)|no visa|no sponsorship/i.test(desc)) usCanAuth = "Yes";
+  else if (/visa sponsorship|sponsorship available|sponsorship provided|work authorization provided/i.test(desc)) usCanAuth = "No";
+  else if (/united states|u\.s\. only|us-based|us residents/i.test(text)) usCanAuth = "Unclear";
+
+  // Comp range
+  let comp = null;
+  const compMatch = desc.match(/\$[\d,]+(?:k)?(?:\s*[-–]\s*\$?[\d,]+(?:k)?)?(?:\s*(?:per year|\/yr|annually|USD))?/i);
+  if (compMatch) comp = compMatch[0].replace(/\s+/g," ").trim();
+
+  // Engagement type
+  let engagement = "Full-time";
+  if (/part.?time/i.test(text)) engagement = "Part-time";
+  else if (/contract|freelance|consultancy|consulting/i.test(text)) engagement = "Contract";
+  else if (/fellowship|fellow/i.test(text)) engagement = "Fellowship";
+  else if (/internship|intern/i.test(text)) engagement = "Internship";
+  else if (/short.?term|temporary/i.test(text)) engagement = "Short-term";
+
+  // Org type
+  let orgType = "Unknown";
+  if (/startup|seed|series [a-c]|early.?stage|founded in 20[12]\d/.test(desc)) orgType = "Startup";
+  else if (/scale.?up|growth.?stage|series [d-f]/.test(desc)) orgType = "Scale-up";
+  else if (/ngo|non.?profit|nonprofit|charity|foundation|501c3|civil society/.test(text)) orgType = "NGO/Non-profit";
+  else if (/united nations|world bank|imf|who|oecd|idb|undp|unicef|multilateral|intergovernmental/.test(text)) orgType = "Multilateral/IGO";
+  else if (/government|ministry|federal|state agency|public sector|municipality/.test(text)) orgType = "Government";
+  else if (/university|research institute|think tank|academia|academic/.test(text)) orgType = "Academia/Research";
+  else if (/foundation/.test(text)) orgType = "Foundation";
+  else orgType = "Corporate";
+
+  // Posting deadline - look for closing/deadline date
+  let deadline = null;
+  const dlMatch = desc.match(/(?:deadline|closing date|apply by|applications? (?:due|close)|closes?)[:\s]+([A-Z][a-z]+ \d{1,2},?\s*\d{4}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i);
+  if (dlMatch) deadline = dlMatch[1].trim();
+
+  // Hard NO detection
+  const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons","military contractor","gambling","casino","tobacco","cigarette"];
+  const hardNo = hardNoTerms.some(t => text.includes(t));
+
+  return { mission, seniority, remote, usCanAuth, comp, engagement, orgType, deadline, hardNo };
+}
+
+// Keyword relevance filter (replaces AI scoring)
+function isRelevant(job) {
+  const text = ((job.title||"") + " " + (job.description||"")).toLowerCase();
+  const title = (job.title||"").toLowerCase();
+
+  // Hard NO - discard immediately
+  const hardNoTerms = ["fossil fuel","oil and gas","petroleum","coal mining","defense contractor","weapons","military contractor","gambling","casino","tobacco","cigarette"];
+  if (hardNoTerms.some(t => text.includes(t))) return false;
+
+  // Must match at least one role keyword
+  const roleKeywords = ["chief of staff","strategy","program lead","program manager","project lead","implementation","advisory","impact","innovation","policy","operations","development manager","country director","partnerships","head of","director of","senior manager","senior advisor","senior consultant","senior associate"];
+  const hasRole = roleKeywords.some(k => title.includes(k));
+  if (!hasRole) return false;
+
+  // Exclude clearly wrong roles
+  const excludeTerms = ["engineer","developer","designer","data scientist","accountant","sales representative","recruiter","marketing manager","content writer","copywriter","nurse","driver"];
+  if (excludeTerms.some(t => title.includes(t))) return false;
+
+  return true;
+}
+
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='pipeline')||(i===1&&tab==='feed')));
+  document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
+  document.getElementById('tab-feed').classList.toggle('active', tab==='feed');
+  if (tab === 'feed') loadFeed();
+}
+
+// ── PIPELINE LOGIC ──
 function stars(n, color) {
   const filled = Math.min(Math.max(parseInt(n)||0, 0), 5);
   return `<span class="stars" style="color:${color}">${"★".repeat(filled)}${"☆".repeat(5-filled)}</span>`;
 }
-
 function normalizeStatus(s) {
   if (!s) return "Researching";
   const map = { "researching":"Researching","applied":"Applied","interviewing":"Interviewing","offer":"Offer","rejected":"Rejected","on hold":"On Hold" };
@@ -256,29 +482,21 @@ function normalizePriority(p) {
   const map = { "high":"High","medium":"Medium","low":"Low" };
   return map[p.toLowerCase()] || p;
 }
-
 function showStatus(msg, isErr) {
   const m = document.getElementById("meta");
   const base = metaText();
   m.innerHTML = base + `<span class="${isErr?'save-err':'save-ok'}">${msg}</span>`;
   setTimeout(() => m.innerHTML = base, 2500);
 }
-
 async function load() {
-  try {
-    jobs = await dbGet();
-    render();
-  } catch(e) {
-    document.getElementById("kanban-view").innerHTML = `<div class="loading" style="color:#f87171">Failed to connect. Check Supabase credentials.</div>`;
-  }
+  try { jobs = await dbGet(); render(); }
+  catch(e) { document.getElementById("kanban-view").innerHTML = `<div class="loading" style="color:#f87171">Failed to connect.</div>`; }
 }
-
 function metaText() {
   const interviewing = jobs.filter(j => (j.status||"").toLowerCase() === "interviewing").length;
   const urg = urgentJobs().length;
   return `${jobs.length} roles · ${interviewing} interviewing · ${urg} urgent`;
 }
-
 function urgentJobs() {
   return jobs.filter(j => {
     if (!j.deadline) return false;
@@ -286,21 +504,15 @@ function urgentJobs() {
     return days >= 0 && days <= 7;
   });
 }
-
 function render() {
   document.getElementById("meta").innerHTML = metaText();
   renderUrgent();
-  const normalized = jobs.map(j => ({
-    ...j,
-    status: normalizeStatus(j.status),
-    priority: normalizePriority(j.priority)
-  }));
+  const normalized = jobs.map(j => ({ ...j, status: normalizeStatus(j.status), priority: normalizePriority(j.priority) }));
   const filtered = currentFilter === "All" ? normalized : normalized.filter(j => j.priority === currentFilter);
   document.getElementById("filter-count").textContent = filtered.length + " roles shown";
   if (currentView === "kanban") renderKanban(filtered);
   else renderTable(filtered);
 }
-
 function renderUrgent() {
   const urg = urgentJobs();
   const bar = document.getElementById("urgent-bar");
@@ -312,7 +524,6 @@ function renderUrgent() {
       return `<span class="urgent-tag" data-id="${j.id}">${j.company} — ${days===0?"TODAY":days+"d"}</span>`;
     }).join("");
 }
-
 function renderKanban(filtered) {
   const kv = document.getElementById("kanban-view");
   kv.classList.remove("hidden");
@@ -320,9 +531,7 @@ function renderKanban(filtered) {
   const statuses = STATUSES.filter(s => !["Rejected","On Hold"].includes(s) || filtered.some(j=>j.status===s));
   kv.innerHTML = statuses.map(status => {
     const c = STATUS_COLORS[status];
-    const cols = filtered
-      .filter(j => j.status === status)
-      .sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
+    const cols = filtered.filter(j => j.status === status).sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
     return `<div class="column">
       <div class="col-header">
         <span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${status.toUpperCase()}</span>
@@ -333,72 +542,55 @@ function renderKanban(filtered) {
         const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "";
         return `<div class="card" data-id="${job.id}">
           <div class="card-top">
-            <div>
-              <div class="card-company">${job.company||""}</div>
-              <div class="card-role">${job.role||""}</div>
-            </div>
+            <div><div class="card-company">${job.company||""}</div><div class="card-role">${job.role||""}</div></div>
             <span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${job.priority||""}</span>
           </div>
           ${job.next_action ? `<div class="next-action-strip">→ ${job.next_action}</div>` : ""}
-          <div class="card-bottom">
-            <span style="font-size:10px;color:#555;font-family:monospace">${dl}</span>
-          </div>
+          <div class="card-bottom"><span style="font-size:10px;color:#555;font-family:monospace">${dl}</span></div>
         </div>`;
       }).join("")}
     </div>`;
   }).join("");
 }
-
 function renderTable(filtered) {
   document.getElementById("kanban-view").classList.add("hidden");
   const tv = document.getElementById("table-view");
   tv.classList.remove("hidden");
   const sorted = [...filtered].sort((a,b) => (PRIORITY_ORDER[(a.priority||"medium").toLowerCase()]??1) - (PRIORITY_ORDER[(b.priority||"medium").toLowerCase()]??1));
-  tv.innerHTML = `<table>
-    <thead><tr>
-      ${["Company","Role","Status","Priority","Fit","Interest","Salary","Deadline","Next Action","Source"].map(h=>`<th>${h}</th>`).join("")}
-    </tr></thead>
-    <tbody>
-      ${sorted.map(job => {
-        const c = STATUS_COLORS[job.status]||{};
-        const pc = PRIORITY_COLORS[job.priority]||{};
-        const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "—";
-        return `<tr class="data-row" data-id="${job.id}">
-          <td style="font-weight:600;white-space:nowrap">${job.company||""}</td>
-          <td style="color:#888;font-size:12px">${job.role||""}</td>
-          <td><span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};padding:2px 9px;border-radius:20px;font-family:monospace;font-size:10px">${job.status||""}</span></td>
-          <td><span class="priority-badge" style="background:${pc.bg};color:${pc.text};font-size:10px;padding:2px 7px">${job.priority||""}</span></td>
-          <td>${stars(job.fit,"#F0D080")}</td>
-          <td>${stars(job.interest,"#A78BFA")}</td>
-          <td style="color:#666;font-size:12px;white-space:nowrap">${job.salary||"—"}</td>
-          <td style="color:#555;font-family:monospace;font-size:11px;white-space:nowrap">${dl}</td>
-          <td style="color:#C9A84C;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${job.next_action||"—"}</td>
-          <td style="color:#777;font-size:12px">${job.source||"—"}</td>
-        </tr>`;
-      }).join("")}
-    </tbody>
-  </table>`;
+  tv.innerHTML = `<table><thead><tr>${["Company","Role","Status","Priority","Fit","Interest","Salary","Deadline","Next Action","Source"].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>
+    ${sorted.map(job => {
+      const c = STATUS_COLORS[job.status]||{};
+      const pc = PRIORITY_COLORS[job.priority]||{};
+      const dl = job.deadline ? new Date(job.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "—";
+      return `<tr class="data-row" data-id="${job.id}">
+        <td style="font-weight:600;white-space:nowrap">${job.company||""}</td>
+        <td style="color:#888;font-size:12px">${job.role||""}</td>
+        <td><span class="status-badge" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};padding:2px 9px;border-radius:20px;font-family:monospace;font-size:10px">${job.status||""}</span></td>
+        <td><span class="priority-badge" style="background:${pc.bg};color:${pc.text};font-size:10px;padding:2px 7px">${job.priority||""}</span></td>
+        <td>${stars(job.fit,"#F0D080")}</td>
+        <td>${stars(job.interest,"#A78BFA")}</td>
+        <td style="color:#666;font-size:12px;white-space:nowrap">${job.salary||"—"}</td>
+        <td style="color:#555;font-family:monospace;font-size:11px;white-space:nowrap">${dl}</td>
+        <td style="color:#C9A84C;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${job.next_action||"—"}</td>
+        <td style="color:#777;font-size:12px">${job.source||"—"}</td>
+      </tr>`;
+    }).join("")}
+  </tbody></table>`;
 }
-
 function openDetail(id) {
   const job = jobs.find(j => String(j.id) === String(id));
   if (!job) return;
   const status = normalizeStatus(job.status);
   const priority = normalizePriority(job.priority);
-
   document.getElementById("d-company").textContent = job.company||"";
   document.getElementById("d-role").textContent = job.role||"";
-
   const linkEl = document.getElementById("d-link");
   if (job.link) { linkEl.href = job.link; linkEl.textContent = "→ View Job Description"; linkEl.classList.remove("hidden"); }
   else linkEl.classList.add("hidden");
-
   document.getElementById("d-status-btns").innerHTML = STATUSES.map(s => {
-    const sc = STATUS_COLORS[s];
-    const active = status === s;
+    const sc = STATUS_COLORS[s]; const active = status === s;
     return `<button class="status-btn" style="border:1px solid ${sc.border};background:${active?sc.bg:"transparent"};color:${active?sc.text:"#555"}" onclick="changeStatus('${id}','${s}')">${s}</button>`;
   }).join("");
-
   const pc = PRIORITY_COLORS[priority]||{};
   document.getElementById("d-info-grid").innerHTML = [
     ["Priority", `<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${priority}</span>`],
@@ -408,38 +600,25 @@ function openDetail(id) {
     ["Fit ⚡", stars(job.fit,"#F0D080")],
     ["Interest ♥", stars(job.interest,"#A78BFA")],
   ].map(([l,v])=>`<div class="info-cell"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join("");
-
   const naBlock = document.getElementById("d-next-action-block");
   if (job.next_action) { naBlock.classList.remove("hidden"); document.getElementById("d-next-action").textContent = job.next_action; }
   else naBlock.classList.add("hidden");
-
   const notesBlock = document.getElementById("d-notes-block");
   if (job.notes) { notesBlock.classList.remove("hidden"); document.getElementById("d-notes").textContent = job.notes; }
   else notesBlock.classList.add("hidden");
-
   document.getElementById("d-edit-btn").onclick = () => { closeDetailModal(); openForm(id); };
   document.getElementById("d-delete-btn").onclick = () => { if(confirm("Delete this role?")) { deleteJob(id); closeDetailModal(); } };
   document.getElementById("detail-overlay").classList.remove("hidden");
 }
-
 function closeDetailModal() { document.getElementById("detail-overlay").classList.add("hidden"); }
 function closeFormModal() { document.getElementById("form-overlay").classList.add("hidden"); }
-
 async function changeStatus(id, status) {
   await dbUpdate(id, { status: status.toLowerCase() });
-  jobs = await dbGet();
-  render();
-  openDetail(id);
-  showStatus("✓ updated");
+  jobs = await dbGet(); render(); openDetail(id); showStatus("✓ updated");
 }
-
 async function deleteJob(id) {
-  await dbDelete(id);
-  jobs = await dbGet();
-  render();
-  showStatus("✓ deleted");
+  await dbDelete(id); jobs = await dbGet(); render(); showStatus("✓ deleted");
 }
-
 function openForm(id) {
   editingId = id;
   const job = id ? jobs.find(j => String(j.id) === String(id)) : null;
@@ -458,41 +637,32 @@ function openForm(id) {
   document.getElementById("f-notes").value      = job?.notes      || "";
   document.getElementById("form-overlay").classList.remove("hidden");
 }
-
 async function saveForm() {
   const payload = {
-    company:     document.getElementById("f-company").value.trim(),
-    role:        document.getElementById("f-role").value.trim(),
-    status:      document.getElementById("f-status").value,
-    priority:    document.getElementById("f-priority").value,
-    salary:      document.getElementById("f-salary").value.trim(),
-    deadline:    document.getElementById("f-deadline").value || null,
-    source:      document.getElementById("f-source").value.trim(),
-    fit:         parseInt(document.getElementById("f-fit").value) || null,
-    interest:    parseInt(document.getElementById("f-interest").value) || null,
-    link:        document.getElementById("f-link").value.trim() || null,
+    company: document.getElementById("f-company").value.trim(),
+    role: document.getElementById("f-role").value.trim(),
+    status: document.getElementById("f-status").value,
+    priority: document.getElementById("f-priority").value,
+    salary: document.getElementById("f-salary").value.trim(),
+    deadline: document.getElementById("f-deadline").value || null,
+    source: document.getElementById("f-source").value.trim(),
+    fit: parseInt(document.getElementById("f-fit").value) || null,
+    interest: parseInt(document.getElementById("f-interest").value) || null,
+    link: document.getElementById("f-link").value.trim() || null,
     next_action: document.getElementById("f-next-action").value.trim(),
-    notes:       document.getElementById("f-notes").value.trim(),
+    notes: document.getElementById("f-notes").value.trim(),
   };
   closeFormModal();
-  if (editingId) {
-    await dbUpdate(editingId, payload);
-    showStatus("✓ saved");
-  } else {
-    await dbInsert(payload);
-    showStatus("✓ added");
-  }
-  jobs = await dbGet();
-  render();
+  if (editingId) { await dbUpdate(editingId, payload); showStatus("✓ saved"); }
+  else { await dbInsert(payload); showStatus("✓ added"); }
+  jobs = await dbGet(); render();
 }
-
 function setView(v) {
   currentView = v;
   document.getElementById("btn-kanban").classList.toggle("active", v==="kanban");
   document.getElementById("btn-table").classList.toggle("active", v==="table");
   render();
 }
-
 function setFilter(f, btn) {
   currentFilter = f;
   document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
@@ -500,13 +670,226 @@ function setFilter(f, btn) {
   render();
 }
 
-document.getElementById("detail-overlay").addEventListener("click", function(e) {
-  if (e.target === this) closeDetailModal();
-});
-document.getElementById("form-overlay").addEventListener("click", function(e) {
-  if (e.target === this) closeFormModal();
-});
+// ── FEED LOGIC ──
+function setProgress(msg) {
+  const bar = document.getElementById("progress-bar");
+  bar.classList.add("visible");
+  bar.textContent = msg;
+}
+function hideProgress() { document.getElementById("progress-bar").classList.remove("visible"); }
 
+async function fetchRemotive() {
+  try {
+    const categories = ["management","business","all-others"];
+    let allJobs = [];
+    for (const cat of categories) {
+      const r = await fetch(`https://remotive.com/api/remote-jobs?category=${cat}&limit=50`);
+      const data = await r.json();
+      allJobs.push(...(data.jobs || []).map(j => ({
+        title: j.title, company: j.company_name, url: j.url,
+        location: j.candidate_required_location,
+        description: j.description ? j.description.replace(/<[^>]+>/g,'') : "",
+        source: "Remotive"
+      })));
+    }
+    return allJobs;
+  } catch(e) { console.warn("Remotive failed:", e); return []; }
+}
+
+async function fetchJobicy() {
+  try {
+    const r = await fetch("https://jobicy.com/api/v2/remote-jobs?count=50&industry=management");
+    const data = await r.json();
+    return (data.jobs || []).map(j => ({
+      title: j.jobTitle, company: j.companyName, url: j.url,
+      location: j.jobGeo, description: (j.jobDescription||"").replace(/<[^>]+>/g,''),
+      source: "Jobicy"
+    }));
+  } catch(e) { console.warn("Jobicy failed:", e); return []; }
+}
+
+async function refreshFeed() {
+  const btn = document.getElementById("refresh-btn");
+  btn.disabled = true;
+  btn.textContent = "⟳ Fetching...";
+
+  const existing = await feedGet("all");
+  const existingUrls = new Set((existing || []).map(j => j.url).filter(Boolean));
+
+  let allJobs = [];
+
+  setProgress("Fetching from Remotive...");
+  allJobs.push(...await fetchRemotive());
+
+  setProgress("Fetching from Jobicy...");
+  allJobs.push(...await fetchJobicy());
+
+  // Deduplicate
+  const seen = new Set();
+  allJobs = allJobs.filter(j => {
+    if (!j.url || seen.has(j.url) || existingUrls.has(j.url)) return false;
+    seen.add(j.url); return true;
+  });
+
+  setProgress(`Filtering ${allJobs.length} jobs...`);
+
+  // Filter by relevance
+  const relevant = allJobs.filter(isRelevant);
+  setProgress(`Analyzing ${relevant.length} relevant jobs...`);
+
+  let saved = 0;
+  for (const job of relevant) {
+    const a = analyzeJob(job);
+    if (a.hardNo) continue;
+    await feedInsert({
+      title: job.title, company: job.company, url: job.url,
+      source: job.source, location: job.location,
+      description: (job.description||"").slice(0, 800),
+      org_type: a.orgType, engagement_type: a.engagement,
+      remote: a.remote, us_can_auth_required: a.usCanAuth,
+      relocation_required: "Unclear",
+      comp_visible: a.comp ? "yes" : "no",
+      deadline: a.deadline,
+      fit_summary: a.mission,
+      hard_no: a.hardNo,
+      status: "pending",
+      score_overall: null,
+      score_mission: null, score_role: null, score_seniority: null, score_impact: null,
+    });
+    saved++;
+  }
+
+  hideProgress();
+  btn.disabled = false;
+  btn.textContent = "⟳ Refresh Feed";
+  await loadFeed();
+  showStatus(`✓ ${saved} new jobs added to feed`);
+}
+
+async function loadFeed() {
+  const grid = document.getElementById("feed-grid");
+  grid.innerHTML = `<div class="loading">Loading feed...</div>`;
+  feedJobs = await feedGet(feedFilter);
+  renderFeed();
+}
+
+function flagBadge(value, label, flipColors) {
+  // For US/CAN auth and relocation: "yes" is BAD (red), "no" is GOOD (green)
+  let cls, icon;
+  if (flipColors) {
+    cls = value === "yes" ? "flag-no" : value === "no" ? "flag-yes" : "flag-unclear";
+    icon = value === "yes" ? "✗" : value === "no" ? "✓" : "?";
+  } else {
+    cls = value === "yes" ? "flag-yes" : value === "no" ? "flag-no" : "flag-unclear";
+    icon = value === "yes" ? "✓" : value === "no" ? "✗" : "?";
+  }
+  return `<span class="flag-item ${cls}">${icon} ${label}</span>`;
+}
+
+function renderFeed() {
+  const grid = document.getElementById("feed-grid");
+  const count = document.getElementById("feed-count");
+  const badge = document.getElementById("feed-badge");
+
+  const pending = feedJobs.filter(j => j.status === "pending").length;
+  if (pending > 0) { badge.style.display = "inline"; badge.textContent = pending; }
+  else badge.style.display = "none";
+  count.textContent = `${feedJobs.length} jobs`;
+
+  if (!feedJobs.length) {
+    grid.innerHTML = `<div class="loading">${feedFilter === 'pending' ? 'No pending jobs — click "Refresh Feed" to fetch new listings.' : 'Nothing here yet.'}</div>`;
+    return;
+  }
+
+  grid.innerHTML = feedJobs.map(job => {
+    const mission = job.fit_summary || "—";
+    const seniority = job.description ? (() => {
+      const m = job.description.match(/(\d+)\+?\s*(?:to\s*\d+\s*)?years?\s*(?:of\s*)?(?:experience|exp)/i);
+      return m ? m[1]+"+ yrs exp" : null;
+    })() : null;
+    const comp = job.description ? (() => {
+      const m = job.description.match(/\$[\d,]+(?:k)?(?:\s*[-–]\s*\$?[\d,]+(?:k)?)?/i);
+      return m ? m[0] : null;
+    })() : null;
+
+    return `<div class="feed-card" id="fc-${job.id}">
+
+      <div class="feed-card-top">
+        <div>
+          <div class="feed-card-company">${job.company || ""}</div>
+          <div class="feed-card-role">${job.title || ""}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:monospace;font-size:9px;color:#444;text-transform:uppercase;margin-bottom:3px">${job.source||""}</div>
+          ${job.fetched_at ? `<div style="font-family:monospace;font-size:9px;color:#333">${new Date(job.fetched_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</div>` : ""}
+        </div>
+      </div>
+
+      <div class="feed-tags">
+        ${job.org_type && job.org_type !== "Unknown" ? `<span class="feed-tag tag-org">${job.org_type}</span>` : ""}
+        ${job.engagement_type ? `<span class="feed-tag tag-engagement">${job.engagement_type}</span>` : ""}
+        <span class="feed-tag" style="background:rgba(90,180,120,0.1);color:#5AB478;border:1px solid rgba(90,180,120,0.2)">⚑ ${mission}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-family:monospace;font-size:10px;">
+        <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:7px 10px;">
+          <div style="color:#444;font-size:8px;text-transform:uppercase;margin-bottom:3px">Seniority req.</div>
+          <div style="color:#E8E8E8">${seniority || "Not stated"}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:7px 10px;">
+          <div style="color:#444;font-size:8px;text-transform:uppercase;margin-bottom:3px">Comp range</div>
+          <div style="color:#E8E8E8">${comp || "Not stated"}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:7px 10px;">
+          <div style="color:#444;font-size:8px;text-transform:uppercase;margin-bottom:3px">Remote</div>
+          <div style="color:${job.remote==='Yes'?'#4ade80':job.remote==='No'?'#f87171':'#666'}">${job.remote || "Unclear"}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:7px 10px;">
+          <div style="color:#444;font-size:8px;text-transform:uppercase;margin-bottom:3px">Posting deadline</div>
+          <div style="color:#E8E8E8">${job.deadline || "Not stated"}</div>
+        </div>
+      </div>
+
+      <div class="feed-flags">
+        ${flagBadge(job.us_can_auth_required, "US/CAN auth req.", true)}
+        ${comp ? `<span class="flag-item flag-yes">$ Comp visible</span>` : ""}
+        ${job.location ? `<span class="flag-item flag-unclear">📍 ${job.location}</span>` : ""}
+      </div>
+
+      <div class="feed-actions">
+        <button class="feed-btn-promote" onclick="promoteJob('${job.id}','${(job.company||"").replace(/'/g,"\'")}','${(job.title||"").replace(/'/g,"\'")}','${(job.url||"").replace(/'/g,"\'")}','${job.source||""}')">→ Add to Pipeline</button>
+        ${job.url ? `<a class="feed-btn-link" href="${job.url}" target="_blank">View JD</a>` : ""}
+        <button class="feed-btn-skip" onclick="skipJob('${job.id}')">Skip</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function promoteJob(id, company, role, url, source) {
+  await dbInsert({ company, role, status: "researching", priority: "medium", link: url || null, source, notes: "" });
+  await feedUpdateStatus(id, "promoted");
+  document.getElementById(`fc-${id}`).style.opacity = "0.4";
+  jobs = await dbGet(); render();
+  showStatus(`✓ ${company} added to pipeline`);
+  setTimeout(() => loadFeed(), 800);
+}
+
+async function skipJob(id) {
+  await feedUpdateStatus(id, "skipped");
+  document.getElementById(`fc-${id}`).style.opacity = "0.3";
+  setTimeout(() => loadFeed(), 500);
+}
+
+function setFeedFilter(f, btn) {
+  feedFilter = f;
+  document.querySelectorAll(".feed-filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  loadFeed();
+}
+
+// ── EVENT LISTENERS ──
+document.getElementById("detail-overlay").addEventListener("click", function(e) { if (e.target === this) closeDetailModal(); });
+document.getElementById("form-overlay").addEventListener("click", function(e) { if (e.target === this) closeFormModal(); });
 document.addEventListener("click", function(e) {
   const card = e.target.closest(".card[data-id]");
   const row = e.target.closest("tr.data-row[data-id]");
