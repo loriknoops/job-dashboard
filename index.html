@@ -586,6 +586,89 @@ function isRelevant(job) {
   return true;
 }
 
+// ── FETCH SOURCES ──
+// Auto-fetched: Remotive | Jobicy (keyword search) | We Work Remotely (RSS)
+// Manual check weekly: 80,000 Hours | Climatebase | ImpactPool | EA Board | Idealist | Work on Climate | Apolitical | Probably Good
+
+function stripHtml(s) {
+  return (s||"").replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+}
+
+async function fetchRemotive() {
+  try {
+    const categories = ["management","all-others","business"];
+    let allJobs = [];
+    for (const cat of categories) {
+      const r = await fetch("https://remotive.com/api/remote-jobs?category=" + cat + "&limit=200");
+      if (!r.ok) continue;
+      const data = await r.json();
+      allJobs.push(...(data.jobs||[]).map(j => ({
+        title: j.title, company: j.company_name, url: j.url,
+        location: j.candidate_required_location,
+        description: stripHtml(j.description),
+        source: "Remotive"
+      })));
+    }
+    console.log("Remotive raw: " + allJobs.length);
+    return allJobs;
+  } catch(e) { console.warn("Remotive failed:", e); return []; }
+}
+
+async function fetchJobicy() {
+  try {
+    const tags = ["strategy","program manager","chief of staff","impact","policy","innovation","partnerships","programme","development director","operations director"];
+    let allJobs = [];
+    const seen = new Set();
+    for (const tag of tags) {
+      const r = await fetch("https://jobicy.com/api/v2/remote-jobs?count=50&tag=" + encodeURIComponent(tag));
+      if (!r.ok) continue;
+      const data = await r.json();
+      for (const j of (data.jobs||[])) {
+        if (seen.has(j.url)) continue;
+        seen.add(j.url);
+        allJobs.push({ title: j.jobTitle, company: j.companyName, url: j.url, location: j.jobGeo, description: stripHtml(j.jobDescription), source: "Jobicy" });
+      }
+      await new Promise(res => setTimeout(res, 150));
+    }
+    console.log("Jobicy raw: " + allJobs.length);
+    return allJobs;
+  } catch(e) { console.warn("Jobicy failed:", e); return []; }
+}
+
+async function fetchWeWorkRemotely() {
+  try {
+    const feeds = [
+      "https://weworkremotely.com/categories/remote-management-and-finance-jobs.rss",
+      "https://weworkremotely.com/categories/remote-product-jobs.rss"
+    ];
+    let allJobs = [];
+    for (const feedUrl of feeds) {
+      const r = await fetch(feedUrl);
+      if (!r.ok) continue;
+      const text = await r.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, "text/xml");
+      const items = Array.from(xml.querySelectorAll("item"));
+      allJobs.push(...items.map(item => {
+        const rawTitle = item.querySelector("title") ? item.querySelector("title").textContent : "";
+        const parts = rawTitle.split(":");
+        const company = parts[0].replace(/<!\[CDATA\[/g,"").replace(/\]\]>/g,"").trim();
+        const title = parts.slice(1).join(":").trim() || rawTitle;
+        return {
+          title: title.replace(/<!\[CDATA\[/g,"").replace(/\]\]>/g,"").trim(),
+          company,
+          url: item.querySelector("link") ? item.querySelector("link").textContent.trim() : "",
+          location: "Remote",
+          description: stripHtml(item.querySelector("description") ? item.querySelector("description").textContent : ""),
+          source: "We Work Remotely"
+        };
+      }).filter(j => j.title && j.url));
+    }
+    console.log("We Work Remotely raw: " + allJobs.length);
+    return allJobs;
+  } catch(e) { console.warn("We Work Remotely failed:", e); return []; }
+}
+
 async function clearFeed() {
   if (!confirm("Clear all skipped & pending jobs from feed?")) return;
   await fetch(`${SUPABASE_URL}/rest/v1/job_feed?status=eq.pending`, { method: "DELETE", headers: HEADERS });
